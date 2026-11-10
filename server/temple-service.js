@@ -336,7 +336,7 @@ export class TempleService {
       left: false,
       created: !existing && Boolean(admitted),
       capacityReached: !admitted,
-      presence: admitted
+      presence: admitted ? asPublicPresence(admitted) : null
     };
   }
 

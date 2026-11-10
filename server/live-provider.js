@@ -1,10 +1,12 @@
 import { TikTokLiveConnection } from 'tiktok-live-connector';
 
 export class LiveProvider {
-  constructor({ name = 'tiktok-connector', onEvent, onStatus }) {
+  constructor({ name = 'tiktok-connector', onEvent, onStatus, forwardUrl = process.env.FORWARD_TO_URL, webhookSecret = process.env.LIVE_WEBHOOK_SECRET }) {
     this.name = name;
     this.onEvent = onEvent;
     this.onStatus = onStatus;
+    this.forwardUrl = forwardUrl;
+    this.webhookSecret = webhookSecret;
     this.status = 'disconnected';
     this.channel = '';
     this.liveConnection = null;
@@ -305,6 +307,21 @@ export class LiveProvider {
       this.status = 'connected';
       this.onStatus?.(this.snapshot());
     }
+
+    // Nếu cấu hình chuyển tiếp sang Render để hiển thị trên link Render
+    if (this.forwardUrl && !rawEvent._forwarded) {
+      fetch(this.forwardUrl, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-live-secret': this.webhookSecret || 'chua_online_secret_2026'
+        },
+        body: JSON.stringify({ ...rawEvent, _forwarded: true })
+      }).catch((err) => {
+        console.warn('[LiveProvider] Không chuyển tiếp được sang Render:', err.message);
+      });
+    }
+
     return this.onEvent(event);
   }
 }

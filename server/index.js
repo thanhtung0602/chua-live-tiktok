@@ -219,8 +219,8 @@ app.post('/api/admin/bell/strike', requireAdmin, (request, response) => {
 
 // Endpoint for an authorized TikTok LIVE provider or official integration.
 app.post('/api/live/events', requireWebhookSecret, asyncRoute(async (request, response) => {
-  const result = await provider.ingest(request.body || {});
-  response.status(202).json({ accepted: true, result });
+  await provider.ingest(request.body || {});
+  response.status(202).json({ accepted: true });
 }));
 
 // Endpoint TTS phát âm thanh AI chuẩn tự nhiên, 100% không bao giờ mất tiếng
