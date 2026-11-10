@@ -136,11 +136,14 @@ const ui = {
       this.gifts.title = fullNumber.format(metrics.totalGifts || 0);
     }
 
-    const bellLikes = metrics.bellCycleLikes ?? ((metrics.totalLikes || 0) % 1000);
-    if (this.bellCount) this.bellCount.textContent = fullNumber.format(bellLikes);
-    if (this.bellFill) {
+    const totalLikes = Number(metrics.totalLikes ?? 0);
+    const bellLikes = metrics.bellCycleLikes ?? (totalLikes % 1000);
+    const bellCountEl = document.getElementById('bell-progress-count') || this.bellCount;
+    const bellFillEl = document.getElementById('bell-progress-fill') || this.bellFill;
+    if (bellCountEl) bellCountEl.textContent = fullNumber.format(bellLikes);
+    if (bellFillEl) {
       const pct = Math.min(100, Math.max(0, (bellLikes / 1000) * 100));
-      this.bellFill.style.width = `${pct.toFixed(1)}%`;
+      bellFillEl.style.width = `${pct.toFixed(1)}%`;
     }
     if (this.ceremonyAttendees) this.ceremonyAttendees.textContent = metrics.presentCount || 0;
   },
@@ -227,16 +230,30 @@ const ui = {
   },
   showSpeech(payload) {
     if (!this.speechBubble || !payload?.text) return;
+    const isBell = payload.type === 'bell_strike';
     const isGift = payload.type === 'gift_thanks';
     const isFollow = payload.type === 'follow';
     const isAmbient = payload.type === 'ambient_blessing';
     const isFortune = payload.type === 'fortune';
+    this.speechBubble.classList.toggle('mode-bell', isBell);
     this.speechBubble.classList.toggle('mode-gift', isGift || isFollow);
     this.speechBubble.classList.toggle('mode-fortune', isFortune);
-    this.speechBubble.classList.toggle('mode-welcome', !isGift && !isFollow && !isAmbient && !isFortune);
+    this.speechBubble.classList.toggle('mode-welcome', !isBell && !isGift && !isFollow && !isAmbient && !isFortune);
     this.speechBubble.classList.toggle('mode-ambient', isAmbient);
-    if (this.speechIcon) this.speechIcon.textContent = isFortune ? '🎋' : (isGift || isFollow) ? '🪷' : isAmbient ? '🙏' : '🎙️';
-    if (this.speechKicker) this.speechKicker.textContent = isFortune ? `QUẺ XĂM QUÁN ÂM · ${payload.speaker || 'LỜI QUẺ'}` : isFollow ? `TRI ÂN THEO DÕI · ${payload.speaker || 'ĐẠO HỮU'}` : isGift ? 'TRI ÂN CÔNG ĐỨC' : isAmbient ? 'KHUYẾN TẤN AN LẠC' : 'LỜI CHÙA';
+    if (this.speechIcon) this.speechIcon.textContent = isBell ? '🔔' : isFortune ? '🎋' : (isGift || isFollow) ? '🪷' : isAmbient ? '🙏' : '🎙️';
+    if (this.speechKicker) {
+      this.speechKicker.textContent = isBell
+        ? `ĐẠI HỒNG CHUNG · HOÀN THÀNH MỐC TIM`
+        : isFortune
+        ? `QUẺ XĂM QUÁN ÂM · ${payload.speaker || 'LỜI QUẺ'}`
+        : isFollow
+        ? `TRI ÂN THEO DÕI · ${payload.speaker || 'ĐẠO HỮU'}`
+        : isGift
+        ? 'TRI ÂN CÔNG ĐỨC'
+        : isAmbient
+        ? 'KHUYẾN TẤN AN LẠC'
+        : 'LỜI CHÙA';
+    }
     if (this.speechContent) this.speechContent.textContent = payload.text;
     this.speechBubble.setAttribute('aria-hidden', 'false');
     this.speechBubble.classList.add('is-speaking');
@@ -359,7 +376,7 @@ class AiVoiceDirector {
     if (payload.type === 'gift_thanks' && this.settings.giftThanksEnabled === false) return;
     if (payload.type === 'follow' && this.settings.followEnabled === false) return;
 
-    const isPriority = payload.type === 'gift_thanks' || payload.type === 'follow' || payload.type === 'fortune';
+    const isPriority = payload.type === 'gift_thanks' || payload.type === 'follow' || payload.type === 'fortune' || payload.type === 'bell_strike';
     const now = Date.now();
 
     if (!isPriority) {
@@ -1477,17 +1494,39 @@ liveSocket.on('temple:snapshot', (snapshot) => {
   aiVoiceDirector.applySettings(snapshot.settings);
   sceneOrQueue((scene) => scene.applySnapshot(snapshot));
 });
+// Tự động tải state qua HTTP ngay khi mở trang, không phụ thuộc vào độ trễ WebSocket
+async function loadInitialState() {
+  try {
+    const res = await fetch('/api/state');
+    if (!res.ok) return;
+    const state = await res.json();
+    if (state.metrics) ui.updateMetrics(state.metrics);
+    if (state.live) ui.updateLive(state.live);
+    if (state.topDonors) ui.updateLeaderboard(state.topDonors);
+    if (state.ceremony?.nextCeremonyAt) {
+      nextCeremonyTimestamp = state.ceremony.nextCeremonyAt;
+      tickCeremonyTimer();
+    }
+  } catch (err) {
+    console.warn('Không tải được state khởi tạo:', err.message);
+  }
+}
+loadInitialState();
+
 liveSocket.on('temple:presence:upsert', (presence) => sceneOrQueue((scene) => scene.upsertPresence(presence)));
 liveSocket.on('temple:presence:remove', ({ id }) => sceneOrQueue((scene) => scene.removePresence(id)));
 liveSocket.on('leaderboard:update', (donors) => ui.updateLeaderboard(donors));
 liveSocket.on('metrics:update', (metrics) => ui.updateMetrics(metrics));
 liveSocket.on('like:pulse', (payload) => {
-  if (payload?.totalLikes) {
-    const bellLikes = (payload.totalLikes % 1000);
-    if (ui.bellCount) ui.bellCount.textContent = fullNumber.format(bellLikes);
-    if (ui.bellFill) {
+  if (payload && payload.totalLikes !== undefined) {
+    const totalLikes = Number(payload.totalLikes);
+    const bellLikes = totalLikes % 1000;
+    const bellCountEl = document.getElementById('bell-progress-count') || ui.bellCount;
+    const bellFillEl = document.getElementById('bell-progress-fill') || ui.bellFill;
+    if (bellCountEl) bellCountEl.textContent = fullNumber.format(bellLikes);
+    if (bellFillEl) {
       const pct = Math.min(100, Math.max(0, (bellLikes / 1000) * 100));
-      ui.bellFill.style.width = `${pct.toFixed(1)}%`;
+      bellFillEl.style.width = `${pct.toFixed(1)}%`;
     }
   }
   sceneOrQueue((scene) => scene.spawnFloatingHeart(payload?.count || 1));

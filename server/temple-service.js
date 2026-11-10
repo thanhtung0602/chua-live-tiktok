@@ -123,14 +123,16 @@ export class TempleService {
   }
 
   strikeBellMilestone(milestoneLikes) {
-    const speechText = `A Di Đà Phật! Đạo tràng đã tích lũy đủ ${milestoneLikes.toLocaleString('vi-VN')} lượt tim công đức. Đại hồng chung ngân vang rền khắp mười phương, nguyện cầu quốc thái dân an, chúng sinh an lạc!`;
+    const speech = this.speechDirector ? this.speechDirector.getBellSpeech(milestoneLikes) : null;
+    const speechText = speech?.text || `A Di Đà Phật! Đạo tràng đã tích lũy đủ ${Number(milestoneLikes || 1000).toLocaleString('vi-VN')} lượt tim công đức. Đại Hồng Chung ngân vang rền khắp mười phương, nguyện cầu quốc thái dân an, chúng sinh an lạc!`;
 
     this.io.emit('bell:strike', {
       id: randomUUID(),
       milestone: milestoneLikes,
       cycleProgress: 1000,
       soundUrl: '/assets/temple_bell.wav',
-      message: `ĐẠI HỒNG CHUNG NGÂN VANG · MỐC ${milestoneLikes.toLocaleString('vi-VN')} TIM`,
+      message: `ĐẠI HỒNG CHUNG NGÂN VANG · MỐC ${Number(milestoneLikes || 1000).toLocaleString('vi-VN')} TIM`,
+      speechText,
       createdAt: now()
     });
 
@@ -139,6 +141,7 @@ export class TempleService {
       type: 'bell_strike',
       text: speechText,
       speaker: 'Đại Hồng Chung',
+      url: `/api/tts?text=${encodeURIComponent(speechText)}`,
       createdAt: now()
     });
   }

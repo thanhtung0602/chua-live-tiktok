@@ -634,6 +634,15 @@ $$('[data-quick]').forEach((btn) => btn.addEventListener('click', async () => {
       toast(`🚪 Phật tử ${activePerson.nickname || activePerson.username} đã lướt khỏi live (Out)`);
       return;
     }
+    if (action === 'like-10' || action === 'like-100' || action === 'like-1000') {
+      const count = action === 'like-10' ? 10 : action === 'like-100' ? 100 : 1000;
+      await api('/api/admin/simulate', {
+        method: 'POST',
+        body: JSON.stringify({ type: 'like', count })
+      });
+      toast(`💖 Đã gửi +${count} lượt tim vào chính điện!`);
+      return;
+    }
     if (action === 'like-random') {
       await api('/api/admin/simulate', {
         method: 'POST',

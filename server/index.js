@@ -46,9 +46,8 @@ const provider = new LiveProvider({
   onEvent: (event) => temple.handleEvent(event),
   onStatus: (status) => temple.setLiveStatus(status)
 });
-if (process.env.TIKTOK_CHANNEL) {
-  provider.connect(process.env.TIKTOK_CHANNEL);
-}
+const initialChannel = process.env.TIKTOK_CHANNEL || '@camsisi0';
+provider.connect(initialChannel);
 temple.setLiveStatus(provider.snapshot());
 
 const audioExtensions = new Set(['.mp3', '.m4a', '.wav', '.ogg', '.aac', '.flac']);
@@ -126,7 +125,7 @@ app.post('/api/admin/participants/:id/remove', requireAdmin, (request, response)
 
 app.post('/api/admin/simulate', requireAdmin, asyncRoute(async (request, response) => {
   const event = simulationEvent(request.body || {});
-  const result = await temple.handleEvent(event);
+  const result = await provider.ingest(event);
   response.json({ event, result });
 }));
 

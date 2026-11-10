@@ -133,13 +133,31 @@ export const FOLLOW_TEMPLATES = [
   'Cảm ơn bạn {name} đã phát tâm theo dõi đạo tràng. Nguyện ánh sáng từ bi luôn soi đường dẫn lối cho bạn trên mọi nẻo đường đời.',
   'A Di Đà Phật! Cảm tạ thiện hữu {name} đã kết duyên theo dõi kênh. Kính chúc bạn một đời an nhiên, tâm an vạn sự an, sở cầu như ý.',
   'Tri ân bạn {name} đã bấm theo dõi chốn thiền môn. Chúc bạn luôn dồi dào sức khỏe, công việc thuận lợi, gia đạo êm ấm cát tường.',
-  'A Di Đà Phật! Đạo tràng vô cùng hoan hỷ khi bạn {name} gieo duyên theo dõi. Cầu mong phước lành, may mắn và tài lộc luôn đồng hành cùng bạn.',
-  'Kính tri ân công đức bạn {name} đã theo dõi kênh. Nguyện chúc cho bạn bồ đề tâm kiên cố, mọi âu lo phiền muộn đều hóa thành an yên.',
+  'A Di Đà Phật! Đạo tràng vô cùng hoan hỷ khi bạn {name} gieo duyên theo dõi kênh. Cầu mong phước lành, may mắn và tài lộc luôn đồng hành cùng bạn.',
+  'Kính tri ân công đức bạn {name} đã theo dõi kênh Chùa Online. Nguyện chúc cho bạn bồ đề tâm kiên cố, mọi âu lo phiền muộn đều hóa thành an yên.',
   'A Di Đà Phật! Cảm ơn người bạn thiện lành {name} đã theo dõi kênh. Chúc bạn mỗi ngày trôi qua đều ngập tràn niềm vui, an vui tự tại.',
-  'Hoan hỷ chào đón bạn {name} đã đồng hành cùng kênh Chùa Online. Nguyện chúc cho bạn vạn dặm bình an, phúc lộc đủ đầy.',
-  'A Di Đà Phật! Cảm ơn bạn {name} đã kết duyên cùng đạo tràng. Kính chúc bạn và người thân tai qua nạn khỏi, muôn việc cát tường hanh thông.',
+  'Hoan hỷ chào đón bạn {name} đã theo dõi và đồng hành cùng kênh Chùa Online. Nguyện chúc cho bạn vạn dặm bình an, phúc lộc đủ đầy.',
+  'A Di Đà Phật! Cảm ơn bạn {name} đã kết duyên theo dõi đạo tràng. Kính chúc bạn và người thân tai qua nạn khỏi, muôn việc cát tường hanh thông.',
   'Tri ân tấm lòng hướng Phật của bạn {name} qua nút theo dõi. Chúc bạn tâm luôn sáng suốt, gặp nhiều thiện duyên và quý nhân tương trợ.',
-  'A Di Đà Phật! Cảm ơn bạn {name} đã đồng hành. Nguyện nguồn năng lượng từ bi và bình an lan tỏa sâu rộng trong cuộc sống của bạn.'
+  'A Di Đà Phật! Cảm ơn bạn {name} đã theo dõi và đồng hành. Nguyện nguồn năng lượng từ bi và bình an lan tỏa sâu rộng trong cuộc sống của bạn.'
+];
+
+/**
+ * 12 mẫu lời chúc mừng trang nghiêm, vang rền và đầy phước báu khi Đại Hồng Chung ngân vang (mỗi mốc 1.000 tim)
+ */
+export const BELL_TEMPLATES = [
+  'Nam Mô A Di Đà Phật! Đạo tràng đã hoàn thành mốc {milestone} lượt tim công đức. Tiếng chuông Bát Nhã ngân vang rền khắp mười phương, xua tan muộn phiền, nguyện cầu quốc thái dân an, thiên hạ thái bình, chúng sinh an lạc!',
+  'A Di Đà Phật! Đại Hồng Chung ngân vang rền mười phương pháp giới, chúc mừng mốc {milestone} lượt tim thành kính. Nguyện đem công đức này hồi hướng cho tất cả quý Phật tử thân tâm thường an lạc, phúc thọ tăng long, vạn sự hanh thông cát tường!',
+  'Tiếng chuông thanh tịnh sớm hôm đánh thức bồ đề tâm! Tri ân muôn triệu tấm lòng đã chung tay thắp sáng mốc {milestone} lượt tim công đức. Nguyện cầu mười phương chư Phật từ bi gia hộ cho muôn nhà ấm no, tai qua nạn khỏi!',
+  'Nam Mô Bổn Sư Thích Ca Mâu Ni Phật! Âm vang Đại Hồng Chung rung chuyển cõi ta bà, hoàn thành viên mãn {milestone} ngọn đèn tâm công đức. Chúc cho quý thiện hữu phước trí trang nghiêm, bồ đề tâm kiên cố, sở cầu tất ứng!',
+  'A Di Đà Phật! Nghe tiếng chuông phiền não nhẹ, trí tuệ lớn bồ đề sinh. Chúc mừng đạo tràng đã viên thành mốc {milestone} lượt tim hướng Phật. Nguyện ánh sáng từ bi chiếu soi muôn nẻo, tiêu trừ tật bệnh chướng duyên!',
+  'Hồng chung sơ khấu, bảo kệ cao tuyên! Tiếng chuông chùa ngân vang chúc mừng {milestone} lượt tim công đức viên mãn. Cầu chúc cho quý thiện nam tín nữ một đời bình an, gia đạo thuận hòa, con cháu thảo hiền hiển đạt!',
+  'Nam Mô Quán Thế Âm Bồ Tát! Chuông chùa ngân nga xoa dịu mọi nỗi đau trần thế. Tri ân muôn pháp duyên lành đã vun đắp đủ {milestone} lượt tim thành tâm. Nguyện cầu hồng ân Tam Bảo che chở cho bạn và gia đình vạn dặm bình an!',
+  'A Di Đà Phật! Phước báu vô lượng nơi cửa thiền linh thiêng. Hoan hỷ đại cát tường mốc {milestone} lượt tim cúng dường Tam Bảo. Nguyện cho công danh sự nghiệp của quý vị xuôi chèo mát mái, tài lộc dồi dào vững bền!',
+  'Nam Mô A Di Đà Phật! Tiếng chuông vàng ngân rền thức tỉnh bao cõi lòng, chúc mừng mốc {milestone} lượt tim thành kính nơi Tam Bảo. Nguyện cho muôn nhà ấm no, người người gắn kết yêu thương, gia đạo an khang thịnh vượng!',
+  'Văn chung thanh, phiền não khinh, trí tuệ trưởng, bồ đề sinh! Đại Hồng Chung ngân vang đón mừng mốc {milestone} lượt tim thiện lành. Nguyện phước lành Tam Bảo tuôn chảy vào đời bạn, vạn sự hanh thông như ý nguyện!',
+  'Nam Mô Tiêu Tai Diên Thọ Dược Sư Phật! Tiếng chuông Bát Nhã ngân vang xua tan chướng nạn, hoàn thành mốc {milestone} lượt tim công đức. Cầu chúc cho quý vị thân không tật bệnh, tâm không phiền não, sống vui trọn vẹn từng ngày!',
+  'A Di Đà Phật! Chuông chùa thức tỉnh giấc mộng trần gian, đón mừng mốc {milestone} lượt tim thành tâm chiêm bái. Kính chúc quý thiện hữu vạn dặm bình an, đi đâu cũng có quý nhân phù trợ, phước báu đủ đầy đời đời kiếp kiếp!'
 ];
 
 /**
@@ -151,6 +169,7 @@ export class SpeechDirector {
     this.recentGiftIndices = new Map();
     this.recentAmbientIndices = [];
     this.recentFollowIndices = [];
+    this.recentBellIndices = [];
   }
 
   /**
@@ -338,6 +357,42 @@ export class SpeechDirector {
       index: chosenIndex,
       text,
       name
+    };
+  }
+
+  /**
+   * Chọn lời chúc mừng đại cát tường khi Đại Hồng Chung ngân vang mốc 1000 tim
+   */
+  getBellSpeech(milestoneLikes = 1000) {
+    const formatted = Number(milestoneLikes || 1000).toLocaleString('vi-VN');
+    const total = BELL_TEMPLATES.length;
+    const historyLimit = Math.min(total - 1, 4);
+
+    let candidateIndices = [];
+    for (let i = 0; i < total; i++) {
+      if (!this.recentBellIndices.includes(i)) {
+        candidateIndices.push(i);
+      }
+    }
+    if (candidateIndices.length === 0) {
+      candidateIndices = Array.from({ length: total }, (_, i) => i);
+      this.recentBellIndices = [];
+    }
+
+    const chosenIndex = candidateIndices[Math.floor(Math.random() * candidateIndices.length)];
+    this.recentBellIndices.push(chosenIndex);
+    if (this.recentBellIndices.length > historyLimit) {
+      this.recentBellIndices.shift();
+    }
+
+    const template = BELL_TEMPLATES[chosenIndex];
+    const text = template.replaceAll('{milestone}', formatted);
+
+    return {
+      type: 'bell_strike',
+      index: chosenIndex,
+      text,
+      milestone: milestoneLikes
     };
   }
 }

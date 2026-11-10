@@ -66,3 +66,24 @@ test('SpeechDirector: getAmbientSpeech sinh lời chúc an lạc định kỳ ch
   }
   assert.equal(picked.length, historySize);
 });
+
+test('SpeechDirector: getBellSpeech sinh lời chúc phúc chuông đại hồng chung mốc tim và chống lặp', () => {
+  const director = new SpeechDirector();
+  const speech1 = director.getBellSpeech(1000);
+  assert.equal(speech1.type, 'bell_strike');
+  assert.ok(speech1.text.includes('1.000'));
+  assert.ok(speech1.text.includes('chuông') || speech1.text.includes('Chuông') || speech1.text.includes('Đại Hồng Chung'));
+
+  const speech2 = director.getBellSpeech(2000);
+  assert.equal(speech2.type, 'bell_strike');
+  assert.ok(speech2.text.includes('2.000'));
+  assert.notEqual(speech1.index, speech2.index, 'Hai lần thỉnh chuông liên tiếp không được trùng câu');
+});
+
+test('SpeechDirector: getFollowSpeech sinh lời cảm ơn khi có người bấm theo dõi kênh', () => {
+  const director = new SpeechDirector();
+  const speech = director.getFollowSpeech({ nickname: 'Hoa Sen', username: 'hoasen_vn' });
+  assert.equal(speech.type, 'follow');
+  assert.ok(speech.text.includes('Hoa Sen'));
+  assert.ok(speech.text.includes('theo dõi'));
+});

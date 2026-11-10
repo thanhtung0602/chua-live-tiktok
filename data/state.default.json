@@ -117,10 +117,10 @@
   ],
   "topDonors": [],
   "metrics": {
-    "totalLikes": 0,
-    "totalGifts": 0,
-    "totalGiftValue": 0,
-    "anonymousLikes": 0,
+    "totalLikes": 2680,
+    "totalGifts": 18,
+    "totalGiftValue": 320,
+    "anonymousLikes": 1420,
     "lastGiftAt": null
   },
   "meta": {
