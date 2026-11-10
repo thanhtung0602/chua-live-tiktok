@@ -1,0 +1,16 @@
+services:
+  - type: web
+    name: chua-online-tiktok-live
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: LIVE_PROVIDER_NAME
+        value: tiktok-webhook
+      - key: TIKTOK_CHANNEL
+        value: "@camsisi0"
+      - key: LIVE_WEBHOOK_SECRET
+        value: chua_online_secret_2026
