@@ -196,14 +196,55 @@ function renderPeople() {
 
 function renderLive() {
   const live = state.live || {};
+  const isMock = live.name === 'Mock simulator' || live.name === 'mock' || live.mode === 'simulator';
+  const isWebhook = live.name === 'tiktok-webhook' || live.mode === 'webhook';
+  const currentMode = isMock ? 'simulator' : (isWebhook ? 'webhook' : 'live');
+
+  // Đổi trạng thái nút chế độ
+  $$('.mode-btn').forEach((btn) => btn.classList.toggle('active', btn.dataset.mode === currentMode));
+
+  // Cập nhật thanh tiêu đề trên cùng
+  const topbarBadge = $('#topbar-mode-badge');
+  const topbarText = $('#topbar-mode-text');
+  const topbarBtn = $('#topbar-toggle-mode-btn');
+  if (topbarBadge && topbarText && topbarBtn) {
+    topbarBadge.className = `topbar-mode-badge ${currentMode}`;
+    if (currentMode === 'live') {
+      topbarText.textContent = `🔴 THỰC TẾ (${live.channel || '@camsisi0'})`;
+      topbarBtn.textContent = 'Chuyển Giả Lập';
+    } else if (currentMode === 'simulator') {
+      topbarText.textContent = '🟡 GIẢ LẬP';
+      topbarBtn.textContent = 'Chuyển LIVE Thật';
+    } else {
+      topbarText.textContent = '🔵 WEBHOOK';
+      topbarBtn.textContent = 'Chuyển LIVE Thật';
+    }
+  }
+
   const connected = ['connected', 'awaiting-webhook', 'simulated'].includes(live.status);
-  $('#provider-name').textContent = live.name || 'Mock simulator';
+  $('#provider-name').textContent = currentMode === 'live'
+    ? 'TikTok LIVE Thực Tế (tiktok-connector)'
+    : currentMode === 'simulator'
+    ? 'Chế độ Giả Lập (Mock simulator)'
+    : 'Webhook TikFinity (API)';
+
   const status = $('#provider-status');
   status.classList.toggle('connected', connected);
-  status.querySelector('span').textContent = ({ simulated: 'Đang ở chế độ giả lập', 'awaiting-webhook': `Đang chờ webhook cho kênh ${live.channel || '@camsisi0'}`, connected: `Đã kết nối (${live.channel || '@camsisi0'})`, disconnected: 'Đã ngắt kết nối' })[live.status] || 'Đã ngắt kết nối';
-  $('#provider-description').textContent = live.status === 'simulated'
-    ? 'Dùng trình giả lập ở tab Tổng quan để thử toàn bộ luồng trước khi tích hợp thật.'
-    : live.status === 'awaiting-webhook' ? `Nguồn cho kênh ${live.channel || '@camsisi0'} đã sẵn sàng; hệ thống đang lắng nghe sự kiện từ TikTok LIVE.` : 'Kết nối nhà cung cấp TikTok LIVE được phép hoặc dùng giả lập để kiểm thử.';
+  status.querySelector('span').textContent = ({
+    simulated: 'Đang ở chế độ giả lập',
+    'awaiting-webhook': `Đang chờ webhook cho kênh ${live.channel || '@camsisi0'}`,
+    connected: `Đã kết nối LIVE (${live.channel || '@camsisi0'})`,
+    connecting: `Đang kết nối phòng LIVE ${live.channel || '@camsisi0'}...`,
+    disconnected: 'Đã ngắt kết nối',
+    'stream-ended': 'Phiên LIVE đã kết thúc'
+  })[live.status] || 'Đã ngắt kết nối';
+
+  $('#provider-description').textContent = currentMode === 'simulator'
+    ? 'Hệ thống đang chạy chế độ Giả lập. Bạn có thể bấm các nút mô phỏng ở tab Tổng quan để thử nghiệm.'
+    : currentMode === 'live'
+    ? `Hệ thống đang kết nối trực tiếp phòng LIVE của kênh ${live.channel || '@camsisi0'}. Mọi bình luận, thả tim, quà tặng thật sẽ tự động hiển thị lên chùa.`
+    : `Đang lắng nghe sự kiện từ TikFinity hoặc TikTok Studio gửi vào webhook POST /api/live/events.`;
+
   const channelInput = document.querySelector('#provider-form [name="channel"]');
   if (channelInput && live.channel) channelInput.value = live.channel;
 }
@@ -494,6 +535,41 @@ $('#people-list').addEventListener('click', async (event) => {
   const id = event.target.closest('[data-remove-person]')?.dataset.removePerson;
   if (!id) return;
   try { const output = await api(`/api/admin/participants/${encodeURIComponent(id)}/remove`, { method: 'POST' }); toast(output.removed ? 'Nhân vật đang rời về cổng.' : 'Nhân vật không còn trong chính điện.'); } catch (error) { toast(error.message, true); }
+});
+
+$$('.mode-btn').forEach((btn) => {
+  btn.addEventListener('click', async () => {
+    const mode = btn.dataset.mode;
+    const channel = $('#provider-form [name="channel"]')?.value || '@camsisi0';
+    try {
+      const res = await api('/api/admin/live/mode', {
+        method: 'POST',
+        body: JSON.stringify({ mode, channel })
+      });
+      state.live = res.live;
+      renderLive();
+      toast(mode === 'live' ? `Đã chuyển sang TikTok LIVE Thực Tế (${channel})` : mode === 'simulator' ? 'Đã chuyển sang chế độ Giả Lập' : 'Đã chuyển sang Webhook TikFinity');
+    } catch (err) {
+      toast(err.message, true);
+    }
+  });
+});
+
+$('#topbar-toggle-mode-btn')?.addEventListener('click', async () => {
+  const isLive = state.live?.mode === 'live' || state.live?.name === 'tiktok-connector';
+  const nextMode = isLive ? 'simulator' : 'live';
+  const channel = state.live?.channel || '@camsisi0';
+  try {
+    const res = await api('/api/admin/live/mode', {
+      method: 'POST',
+      body: JSON.stringify({ mode: nextMode, channel })
+    });
+    state.live = res.live;
+    renderLive();
+    toast(nextMode === 'live' ? `Đã chuyển sang TikTok LIVE Thực Tế (${channel})` : 'Đã chuyển sang chế độ Giả Lập');
+  } catch (err) {
+    toast(err.message, true);
+  }
 });
 
 $('#provider-form').addEventListener('submit', async (event) => {

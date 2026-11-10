@@ -12,6 +12,27 @@ export class LiveProvider {
     this.roomId = null;
   }
 
+  setMode(mode = 'live', channel = '') {
+    if (channel) this.channel = String(channel).trim();
+    if (mode === 'simulator' || mode === 'mock') {
+      this.disconnect();
+      this.name = 'Mock simulator';
+      this.status = 'simulated';
+      this.onStatus?.(this.snapshot());
+      return this.snapshot();
+    }
+    if (mode === 'webhook') {
+      this.disconnect();
+      this.name = 'tiktok-webhook';
+      this.status = 'awaiting-webhook';
+      this.onStatus?.(this.snapshot());
+      return this.snapshot();
+    }
+    // Chế độ live thực tế
+    this.name = 'tiktok-connector';
+    return this.connect(this.channel || channel || '@camsisi0');
+  }
+
   connect(channel = '') {
     this.channel = String(channel || '').trim();
     const clean = this.channel.replace(/^@/, '').trim();
@@ -213,8 +234,12 @@ export class LiveProvider {
   }
 
   snapshot() {
+    const mode = (this.name === 'Mock simulator' || this.name === 'mock')
+      ? 'simulator'
+      : (this.name === 'tiktok-webhook' ? 'webhook' : 'live');
     return {
       name: this.name,
+      mode,
       status: this.status,
       channel: this.channel,
       roomId: this.roomId

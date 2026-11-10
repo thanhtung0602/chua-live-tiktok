@@ -46,6 +46,10 @@
             <h1 id="page-title">Tổng quan chính điện</h1>
           </div>
           <div class="top-actions">
+            <div class="topbar-mode-badge" id="topbar-mode-badge">
+              <span id="topbar-mode-text">🔴 LIVE: @camsisi0</span>
+              <button type="button" class="btn-quick-toggle" id="topbar-toggle-mode-btn">Đổi sang Giả lập</button>
+            </div>
             <a class="view-link" href="/" target="_blank" rel="noreferrer"
               >Mở màn OBS ↗</a
             >
@@ -509,8 +513,24 @@
           </div>
           <div class="two-column live-grid">
             <section class="panel provider-card">
-              <p class="eyebrow">TRẠNG THÁI NGUỒN</p>
-              <h3 id="provider-name">Mock simulator</h3>
+              <p class="eyebrow">CHUYỂN ĐỔI CHẾ ĐỘ NGUỒN</p>
+              <div class="mode-selector-tabs" id="mode-selector-tabs">
+                <button type="button" class="mode-btn" data-mode="live">
+                  <b>🔴 LIVE Thực Tế</b>
+                  <small>Tự động bắt trực tiếp TikTok</small>
+                </button>
+                <button type="button" class="mode-btn" data-mode="simulator">
+                  <b>🟡 Chế Độ Giả Lập</b>
+                  <small>Test mô phỏng không cần live</small>
+                </button>
+                <button type="button" class="mode-btn" data-mode="webhook">
+                  <b>🔵 Webhook TikFinity</b>
+                  <small>Nhận sự kiện qua Webhook</small>
+                </button>
+              </div>
+
+              <p class="eyebrow" style="margin-top: 14px;">TRẠNG THÁI NGUỒN</p>
+              <h3 id="provider-name">tiktok-connector</h3>
               <div class="provider-status" id="provider-status">
                 <i></i><span>Đã ngắt kết nối</span>
               </div>

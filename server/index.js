@@ -36,8 +36,13 @@ const app = express();
 const httpServer = createServer(app);
 const io = new Server(httpServer, { cors: { origin: '*' } });
 const temple = new TempleService({ store, io });
+const rawProvider = process.env.LIVE_PROVIDER_NAME;
+const providerName = (!rawProvider || rawProvider === 'mock' || rawProvider === 'Mock simulator')
+  ? 'tiktok-connector'
+  : rawProvider;
+
 const provider = new LiveProvider({
-  name: process.env.LIVE_PROVIDER_NAME || 'tiktok-connector',
+  name: providerName,
   onEvent: (event) => temple.handleEvent(event),
   onStatus: (status) => temple.setLiveStatus(status)
 });
@@ -125,6 +130,12 @@ app.post('/api/admin/simulate', requireAdmin, asyncRoute(async (request, respons
   response.json({ event, result });
 }));
 
+app.post('/api/admin/live/mode', requireAdmin, (request, response) => {
+  const { mode = 'live', channel = '' } = request.body || {};
+  const live = provider.setMode(mode, channel);
+  temple.setLiveStatus(live);
+  response.json({ ok: true, live });
+});
 app.post('/api/admin/live/connect', requireAdmin, (request, response) => {
   response.json({ live: provider.connect(request.body?.channel) });
 });

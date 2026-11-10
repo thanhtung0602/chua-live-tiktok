@@ -36,6 +36,23 @@ test('LiveProvider: connect với webhook provider chuyển sang awaiting-webhoo
   assert.equal(connected.status, 'awaiting-webhook');
 });
 
+test('LiveProvider: setMode chuyển đổi linh hoạt giữa simulator, webhook và live', () => {
+  const provider = new LiveProvider({
+    name: 'tiktok-connector',
+    onEvent: () => {},
+    onStatus: () => {}
+  });
+
+  const sim = provider.setMode('simulator');
+  assert.equal(sim.status, 'simulated');
+  assert.equal(sim.mode, 'simulator');
+
+  const hook = provider.setMode('webhook', '@camsisi0');
+  assert.equal(hook.status, 'awaiting-webhook');
+  assert.equal(hook.mode, 'webhook');
+  assert.equal(hook.channel, '@camsisi0');
+});
+
 test('LiveProvider: ingest sự kiện hợp lệ và từ chối sự kiện không hợp lệ', async () => {
   const events = [];
   const provider = new LiveProvider({
