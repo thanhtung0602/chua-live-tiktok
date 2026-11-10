@@ -34,12 +34,10 @@ const store = await createStore({
 
 const app = express();
 const httpServer = createServer(app);
-const io = new Server(httpServer, { cors: { origin: false } });
+const io = new Server(httpServer, { cors: { origin: '*' } });
 const temple = new TempleService({ store, io });
 const provider = new LiveProvider({
-  name: process.env.LIVE_PROVIDER_NAME && process.env.LIVE_PROVIDER_NAME !== 'mock'
-    ? process.env.LIVE_PROVIDER_NAME
-    : 'Mock simulator',
+  name: process.env.LIVE_PROVIDER_NAME || 'tiktok-connector',
   onEvent: (event) => temple.handleEvent(event),
   onStatus: (status) => temple.setLiveStatus(status)
 });
@@ -259,7 +257,11 @@ app.get('/admin', (_request, response) => response.sendFile(path.join(publicDir,
 app.use(express.static(publicDir, { extensions: ['html'] }));
 
 io.on('connection', (socket) => {
+  console.log(`[Socket] 🟢 Đã kết nối màn hình hiển thị (ID: ${socket.id}, IP: ${socket.handshake.address})`);
   socket.emit('temple:snapshot', temple.snapshot());
+  socket.on('disconnect', () => {
+    console.log(`[Socket] 🔴 Màn hình hiển thị đã ngắt (ID: ${socket.id})`);
+  });
   socket.on('gift:finished', (payload) => temple.finishGift(payload?.id, 'game'));
   socket.on('audio:ended', (payload) => {
     if (Number(payload?.revision) === Number(temple.data.settings.audio.revision)) temple.audioAction('ended').catch(console.error);
