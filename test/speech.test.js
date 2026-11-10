@@ -1,112 +1,199 @@
-import test from 'node:test';
-import assert from 'node:assert/strict';
-import { SpeechDirector, WELCOME_TEMPLATES, GIFT_TEMPLATES } from '../server/speech.js';
+import test from "node:test";
+import assert from "node:assert/strict";
+import {
+  SpeechDirector,
+  WELCOME_TEMPLATES,
+  GIFT_TEMPLATES,
+} from "../server/speech.js";
 
-test('SpeechDirector: getWelcomeSpeech sinh lời chào trang nghiêm và thay thế tên chính xác', () => {
+test("SpeechDirector: getWelcomeSpeech sinh lời chào trang nghiêm và thay thế tên chính xác", () => {
   const director = new SpeechDirector();
-  const speech = director.getWelcomeSpeech({ nickname: 'Minh An', username: 'minhan123' });
-  assert.equal(speech.type, 'welcome');
-  assert.ok(speech.text.includes('Minh An'));
-  assert.ok(!speech.text.includes('{name}'));
-  assert.ok(!speech.text.includes('{username}'));
+  const speech = director.getWelcomeSpeech({
+    nickname: "Minh An",
+    username: "minhan123",
+  });
+  assert.equal(speech.type, "welcome");
+  assert.ok(speech.text.includes("Minh An"));
+  assert.ok(!speech.text.includes("{name}"));
+  assert.ok(!speech.text.includes("{username}"));
 });
 
-test('SpeechDirector: chống lặp câu chào - không lặp lại câu trong cửa sổ lịch sử gần nhất', () => {
+test("SpeechDirector: chống lặp câu chào - không lặp lại câu trong cửa sổ lịch sử gần nhất", () => {
   const director = new SpeechDirector();
   const historySize = 8;
   const pickedIndices = [];
   for (let i = 0; i < historySize; i++) {
     const s = director.getWelcomeSpeech({ nickname: `User_${i}` });
-    assert.ok(!pickedIndices.includes(s.index), `Câu index ${s.index} bị lặp lại trong ${historySize} lượt đầu!`);
+    assert.ok(
+      !pickedIndices.includes(s.index),
+      `Câu index ${s.index} bị lặp lại trong ${historySize} lượt đầu!`,
+    );
     pickedIndices.push(s.index);
   }
   assert.equal(pickedIndices.length, historySize);
 });
 
-test('SpeechDirector: phân loại danh mục quà tặng chính xác (love, peace, health, luck, ceremony, general)', () => {
+test("SpeechDirector: phân loại danh mục quà tặng chính xác (love, peace, health, luck, ceremony, general)", () => {
   const director = new SpeechDirector();
-  assert.equal(director.detectGiftCategory({ name: 'Hoa hồng', id: 'rose' }), 'love');
-  assert.equal(director.detectGiftCategory({ name: 'Bắn tim', id: 'heart' }), 'love');
-  assert.equal(director.detectGiftCategory({ name: 'Bó hoa', id: 'flower' }), 'peace');
-  assert.equal(director.detectGiftCategory({ name: 'Hoa sen', id: 'lotus' }), 'peace');
-  assert.equal(director.detectGiftCategory({ name: 'Bó hoa mùa xuân' }), 'health');
-  assert.equal(director.detectGiftCategory({ name: 'Yêu bạn' }), 'luck');
-  assert.equal(director.detectGiftCategory({ name: 'Cỏ bốn lá 10xu' }), 'luck');
-  assert.equal(director.detectGiftCategory({ name: 'Chuông chùa', id: 'bell' }), 'ceremony');
-  assert.equal(director.detectGiftCategory({ name: 'Sư Tử', id: 'lion' }), 'ceremony');
-  assert.equal(director.detectGiftCategory({ name: 'Món quà bất kỳ' }), 'general');
+  assert.equal(
+    director.detectGiftCategory({ name: "Hoa hồng", id: "rose" }),
+    "love",
+  );
+  assert.equal(
+    director.detectGiftCategory({ name: "Bắn tim", id: "heart" }),
+    "love",
+  );
+  assert.equal(
+    director.detectGiftCategory({ name: "Bó hoa", id: "flower" }),
+    "peace",
+  );
+  assert.equal(
+    director.detectGiftCategory({ name: "Hoa sen", id: "lotus" }),
+    "peace",
+  );
+  assert.equal(
+    director.detectGiftCategory({ name: "Bó hoa mùa xuân" }),
+    "health",
+  );
+  assert.equal(director.detectGiftCategory({ name: "Yêu bạn" }), "luck");
+  assert.equal(director.detectGiftCategory({ name: "Cỏ bốn lá 10xu" }), "luck");
+  assert.equal(
+    director.detectGiftCategory({ name: "Chuông chùa", id: "bell" }),
+    "ceremony",
+  );
+  assert.equal(
+    director.detectGiftCategory({ name: "Sư Tử", id: "lion" }),
+    "ceremony",
+  );
+  assert.equal(
+    director.detectGiftCategory({ name: "Món quà bất kỳ" }),
+    "general",
+  );
 });
 
-test('SpeechDirector: getGiftThankYouSpeech tạo lời cảm ơn phù hợp với quà tặng và số lượng repeat', () => {
+test("SpeechDirector: getGiftThankYouSpeech tạo lời cảm ơn phù hợp với quà tặng và số lượng repeat", () => {
   const director = new SpeechDirector();
-  const giftRose = { name: 'Hoa hồng', id: 'rose' };
-  const speechRose = director.getGiftThankYouSpeech({ nickname: 'Thiện Tùng' }, giftRose, 5);
-  assert.equal(speechRose.type, 'gift_thanks');
-  assert.equal(speechRose.category, 'love');
-  assert.ok(speechRose.text.includes('Thiện Tùng'));
-  assert.ok(speechRose.text.includes('Hoa hồng ×5'));
-  assert.ok(speechRose.text.includes('duyên'));
-  assert.ok(!speechRose.text.includes('{name}'));
-  assert.ok(!speechRose.text.includes('{gift}'));
+  const giftRose = { name: "Hoa hồng", id: "rose" };
+  const speechRose = director.getGiftThankYouSpeech(
+    { nickname: "Thiện Tùng" },
+    giftRose,
+    5,
+  );
+  assert.equal(speechRose.type, "gift_thanks");
+  assert.equal(speechRose.category, "love");
+  assert.ok(speechRose.text.includes("Thiện Tùng"));
+  assert.ok(speechRose.text.includes("Hoa hồng ×5"));
+  assert.ok(speechRose.text.includes("duyên"));
+  assert.ok(!speechRose.text.includes("{name}"));
+  assert.ok(!speechRose.text.includes("{gift}"));
 
-  const giftPeace = { name: 'Bó hoa', id: 'bouquet' };
-  const speechPeace = director.getGiftThankYouSpeech({ nickname: 'Minh Tuệ' }, giftPeace, 1);
-  assert.equal(speechPeace.category, 'peace');
-  assert.ok(speechPeace.text.includes('bình an'));
+  const giftPeace = { name: "Bó hoa", id: "bouquet" };
+  const speechPeace = director.getGiftThankYouSpeech(
+    { nickname: "Minh Tuệ" },
+    giftPeace,
+    1,
+  );
+  assert.equal(speechPeace.category, "peace");
+  assert.ok(speechPeace.text.includes("bình an"));
 
-  const giftHealth = { name: 'Bó hoa mùa xuân', id: 'spring-bouquet' };
-  const speechHealth = director.getGiftThankYouSpeech({ nickname: 'An Lạc' }, giftHealth, 1);
-  assert.equal(speechHealth.category, 'health');
-  assert.ok(speechHealth.text.includes('sức khỏe'));
+  const giftHealth = { name: "Bó hoa mùa xuân", id: "spring-bouquet" };
+  const speechHealth = director.getGiftThankYouSpeech(
+    { nickname: "An Lạc" },
+    giftHealth,
+    1,
+  );
+  assert.equal(speechHealth.category, "health");
+  assert.ok(speechHealth.text.includes("sức khỏe"));
 
-  const giftLuck = { name: 'Yêu bạn', id: 'love-you' };
-  const speechLuck = director.getGiftThankYouSpeech({ nickname: 'Như Ý' }, giftLuck, 1);
-  assert.equal(speechLuck.category, 'luck');
-  assert.ok(speechLuck.text.includes('may mắn'));
+  const giftLuck = { name: "Yêu bạn", id: "love-you" };
+  const speechLuck = director.getGiftThankYouSpeech(
+    { nickname: "Như Ý" },
+    giftLuck,
+    1,
+  );
+  assert.equal(speechLuck.category, "luck");
+  assert.ok(speechLuck.text.includes("may mắn"));
 
   // Kiểm tra an toàn khi sender hoặc gift là null/undefined
   const nullSpeech = director.getGiftThankYouSpeech(null, null, 1);
-  assert.equal(nullSpeech.type, 'gift_thanks');
-  assert.ok(nullSpeech.text.includes('thiện hữu'));
-  assert.equal(director.getWelcomeSpeech(null).name, 'thiện hữu');
-  assert.equal(director.getFollowSpeech(null).name, 'thiện hữu');
+  assert.equal(nullSpeech.type, "gift_thanks");
+  assert.ok(nullSpeech.text.includes("thiện hữu"));
+  assert.equal(director.getWelcomeSpeech(null).name, "thiện hữu");
+  assert.equal(director.getFollowSpeech(null).name, "thiện hữu");
 });
 
-test('SpeechDirector: getAmbientSpeech sinh lời chúc an lạc định kỳ cho chế độ Treo Live 24/7 và chống lặp', () => {
+test("SpeechDirector: getAmbientSpeech sinh lời chúc an lạc định kỳ cho chế độ Treo Live 24/7 và chống lặp", () => {
   const director = new SpeechDirector();
   const speech = director.getAmbientSpeech();
-  assert.equal(speech.type, 'ambient_blessing');
-  assert.ok(typeof speech.text === 'string' && speech.text.length > 10);
-  assert.ok(speech.text.includes('A Di Đà Phật') || speech.text.includes('Phật') || speech.text.includes('Bồ Tát'));
+  assert.equal(speech.type, "ambient_blessing");
+  assert.ok(typeof speech.text === "string" && speech.text.length > 10);
+  assert.ok(
+    speech.text.includes("A Di Đà Phật") ||
+      speech.text.includes("Phật") ||
+      speech.text.includes("Bồ Tát"),
+  );
 
   // Kiểm tra chống lặp trong 6 lượt liên tiếp
   const historySize = 6;
   const picked = [speech.index];
   for (let i = 1; i < historySize; i++) {
     const next = director.getAmbientSpeech();
-    assert.ok(!picked.includes(next.index), `Câu ambient index ${next.index} bị lặp lại!`);
+    assert.ok(
+      !picked.includes(next.index),
+      `Câu ambient index ${next.index} bị lặp lại!`,
+    );
     picked.push(next.index);
   }
   assert.equal(picked.length, historySize);
 });
 
-test('SpeechDirector: getBellSpeech sinh lời chúc phúc chuông đại hồng chung mốc tim và chống lặp', () => {
+test("SpeechDirector: getBellSpeech sinh lời chúc phúc chuông đại hồng chung mốc tim và chống lặp", () => {
   const director = new SpeechDirector();
   const speech1 = director.getBellSpeech(1000);
-  assert.equal(speech1.type, 'bell_strike');
-  assert.ok(speech1.text.includes('1.000'));
-  assert.ok(speech1.text.includes('chuông') || speech1.text.includes('Chuông') || speech1.text.includes('Đại Hồng Chung'));
+  assert.equal(speech1.type, "bell_strike");
+  assert.ok(speech1.text.includes("1.000"));
+  assert.ok(
+    speech1.text.includes("chuông") ||
+      speech1.text.includes("Chuông") ||
+      speech1.text.includes("Đại Hồng Chung"),
+  );
 
   const speech2 = director.getBellSpeech(2000);
-  assert.equal(speech2.type, 'bell_strike');
-  assert.ok(speech2.text.includes('2.000'));
-  assert.notEqual(speech1.index, speech2.index, 'Hai lần thỉnh chuông liên tiếp không được trùng câu');
+  assert.equal(speech2.type, "bell_strike");
+  assert.ok(speech2.text.includes("2.000"));
+  assert.notEqual(
+    speech1.index,
+    speech2.index,
+    "Hai lần thỉnh chuông liên tiếp không được trùng câu",
+  );
 });
 
-test('SpeechDirector: getFollowSpeech sinh lời cảm ơn khi có người bấm theo dõi kênh', () => {
+test("SpeechDirector: getFollowSpeech sinh lời cảm ơn khi có người bấm theo dõi kênh", () => {
   const director = new SpeechDirector();
-  const speech = director.getFollowSpeech({ nickname: 'Hoa Sen', username: 'hoasen_vn' });
-  assert.equal(speech.type, 'follow');
-  assert.ok(speech.text.includes('Hoa Sen'));
-  assert.ok(speech.text.includes('theo dõi'));
+  const speech = director.getFollowSpeech({
+    nickname: "Hoa Sen",
+    username: "hoasen_vn",
+  });
+  assert.equal(speech.type, "follow");
+  assert.ok(speech.text.includes("Hoa Sen"));
+  assert.ok(speech.text.includes("theo dõi"));
+});
+
+test("SpeechDirector: getIncenseSpeech sinh lời chúc khi Phật tử dâng hương và chống lặp", () => {
+  const director = new SpeechDirector();
+  const speech = director.getIncenseSpeech({
+    nickname: "Minh Tâm",
+    username: "minhtam_live",
+  });
+  assert.equal(speech.type, "incense");
+  assert.ok(speech.text.includes("Minh Tâm"));
+  assert.ok(speech.text.includes("hương") || speech.text.includes("Hương"));
+
+  const nextSpeech = director.getIncenseSpeech({ nickname: "Diệu Âm" });
+  assert.notEqual(speech.index, nextSpeech.index, "Hai lượt dâng hương liên tiếp không được trùng mẫu câu");
+
+  // An toàn khi viewer là null
+  const nullSpeech = director.getIncenseSpeech(null);
+  assert.equal(nullSpeech.type, "incense");
+  assert.ok(nullSpeech.text.includes("thiện hữu"));
 });

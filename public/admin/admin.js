@@ -695,6 +695,15 @@ $$('[data-quick]').forEach((btn) => btn.addEventListener('click', async () => {
         body: JSON.stringify({ type: 'comment', viewerId: vId, username: `pt_${vId}`, nickname: vName, text: 'gieo quẻ' })
       });
       toast(`🎋 Phật tử ${vName} vừa gieo quẻ xăm Quán Âm!`);
+    } else if (action === 'comment-incense') {
+      const activePerson = (state.presences || []).find((p) => p.state !== 'exiting');
+      const vId = activePerson?.id || id;
+      const vName = activePerson?.nickname || name;
+      await api('/api/admin/simulate', {
+        method: 'POST',
+        body: JSON.stringify({ type: 'comment', viewerId: vId, username: `pt_${vId}`, nickname: vName, text: 'dâng hương' })
+      });
+      toast(`🪔 Phật tử ${vName} tiến vào dâng hương cúng dường Tam Bảo!`);
     }
   } catch (err) {
     toast(err.message, true);

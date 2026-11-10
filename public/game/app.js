@@ -268,13 +268,15 @@ const ui = {
     const isFollow = payload.type === 'follow';
     const isAmbient = payload.type === 'ambient_blessing';
     const isFortune = payload.type === 'fortune';
+    const isIncense = payload.type === 'incense';
     this.speechBubble.classList.toggle('mode-bell', isBell);
-    this.speechBubble.classList.toggle('mode-gift', isGift || isFollow);
+    this.speechBubble.classList.toggle('mode-gift', isGift || isFollow || isIncense);
     this.speechBubble.classList.toggle('mode-fortune', isFortune);
-    this.speechBubble.classList.toggle('mode-welcome', !isBell && !isGift && !isFollow && !isAmbient && !isFortune);
+    this.speechBubble.classList.toggle('mode-welcome', !isBell && !isGift && !isFollow && !isAmbient && !isFortune && !isIncense);
     this.speechBubble.classList.toggle('mode-ambient', isAmbient);
     if (this.speechIcon) {
       this.speechIcon.textContent = isBell ? '🔔'
+        : isIncense ? '🪔'
         : isFortune ? '🎋'
         : isFollow ? '🌸'
         : isGift ? (payload.category === 'love' ? '🌹' : payload.category === 'health' ? '🌿' : payload.category === 'luck' ? '🍀' : payload.category === 'ceremony' ? '🔔' : '🪷')
@@ -284,6 +286,8 @@ const ui = {
     if (this.speechKicker) {
       this.speechKicker.textContent = isBell
         ? `ĐẠI HỒNG CHUNG · HOÀN THÀNH MỐC TIM`
+        : isIncense
+        ? `🪔 THÀNH TÂM DÂNG HƯƠNG · ${payload.speaker || 'THIỆN HỮU'}`
         : isFortune
         ? `QUẺ XĂM QUÁN ÂM · ${payload.speaker || 'LỜI QUẺ'}`
         : isFollow
@@ -1027,6 +1031,206 @@ class RealisticWorshipper {
   }
 
   /**
+   * Nghi thức dâng hương thành tâm trước Phật:
+   * 1. Đứng lên từ bồ đoàn (kneel -> walk1)
+   * 2. Bước chân ra lối đi giữa (X: 540)
+   * 3. Tiến thẳng lên phía trước tượng Phật / bàn thờ (X: 540, Y: 1320)
+   * 4. Quỳ xuống dâng nén tâm hương (hào quang, khói hương nghi ngút, đài sen)
+   * 5. Cúi gập người đảnh lễ Phật chí thành
+   * 6. Sau khi dâng hương xong, quay người bước về bồ đoàn ban đầu
+   * 7. Quỳ xuống tiếp tục tu tập lạy Phật
+   */
+  offerIncense(onComplete) {
+    if (this.mode === 'exiting') return;
+    if (this.offeringIncense) {
+      onComplete?.();
+      return;
+    }
+    this.offeringIncense = true;
+    this.stopPrayerCycle();
+    if (this.walkTimer) this.walkTimer.remove(false);
+    this.scene.tweens.killTweensOf(this.container);
+    this.scene.tweens.killTweensOf(this.sprite);
+
+    const original = this.target();
+    const altarX = 540;
+    const altarY = 1320;
+    const altarScale = 0.58;
+
+    // 1. Đứng dậy
+    this.setSpritePose('walk1');
+
+    let step = 0;
+    const walkEvent = this.scene.time.addEvent({
+      delay: 240,
+      loop: true,
+      callback: () => {
+        step = (step + 1) % 2;
+        this.setSpritePose(step === 0 ? 'walk1' : 'walk2');
+      }
+    });
+
+    const currentX = this.container.x;
+
+    const walkToAltar = () => {
+      // 3. Tiến thẳng lên lối đi giữa về gần bàn thờ / tượng Phật
+      this.scene.tweens.add({
+        targets: this.container,
+        x: altarX,
+        y: altarY,
+        scale: altarScale,
+        duration: 1600,
+        ease: 'Linear',
+        onUpdate: () => this.container.setDepth(this.container.y),
+        onComplete: () => {
+          // Đến trước tượng Phật!
+          walkEvent.remove(false);
+
+          // 4. Quỳ xuống trước bàn thờ
+          this.setSpritePose('kneel');
+          this.sprite.y = 0;
+
+          // Hiệu ứng dâng hương lung linh
+          // A. Luồng khói trầm hương ngào ngạt bốc lên
+          for (let k = 0; k < 6; k++) {
+            this.scene.time.delayedCall(k * 280, () => {
+              this.scene.emitIncenseSmoke(altarX + (Math.random() - 0.5) * 24, altarY - 50);
+            });
+          }
+
+          // B. Hào quang thanh tịnh vàng ấm áp tỏa sáng
+          const aura = this.scene.add.circle(altarX, altarY - 55, 60, 0xffd54f, 0.55)
+            .setBlendMode(Phaser.BlendModes.ADD)
+            .setDepth(1900);
+          this.scene.tweens.add({
+            targets: aura,
+            scale: 2.2,
+            alpha: 0,
+            duration: 2400,
+            ease: 'Sine.out',
+            onComplete: () => aura.destroy()
+          });
+
+          // C. Bông sen vàng tâm linh bay lên
+          const lotus = this.scene.drawLotusAt(altarX, altarY - 45, 1.3, 1950);
+          this.scene.tweens.add({
+            targets: lotus,
+            y: altarY - 150,
+            alpha: 0,
+            scale: 1.8,
+            duration: 2500,
+            ease: 'Sine.out',
+            onComplete: () => lotus.destroy()
+          });
+
+          // D. Biển chữ Thành Tâm Dâng Hương
+          const banner = this.scene.add.text(altarX, altarY - 110, '🪔  THÀNH TÂM DÂNG HƯƠNG  🪔', {
+            fontFamily: '"Be Vietnam Pro", "Segoe UI", Arial, sans-serif',
+            fontSize: '24px',
+            fontWeight: '700',
+            color: '#fff3c4',
+            stroke: '#3e1628',
+            strokeThickness: 5
+          }).setOrigin(0.5).setDepth(2000).setAlpha(0);
+
+          this.scene.tweens.add({
+            targets: banner,
+            y: altarY - 140,
+            alpha: 1,
+            duration: 450,
+            yoyo: true,
+            hold: 2400,
+            ease: 'Sine.inOut',
+            onComplete: () => banner.destroy()
+          });
+
+          // E. Cúi gập người lạy Phật sát đất
+          this.scene.time.delayedCall(600, () => {
+            this.setSpritePose('bow');
+            this.sprite.y = 5;
+
+            // Dừng tĩnh lặng phủ phục thành kính trước Tam Bảo: 2000ms
+            this.scene.time.delayedCall(2000, () => {
+              // Nâng người dậy tạ lễ
+              this.setSpritePose('kneel');
+              this.sprite.y = 0;
+
+              // Dừng 600ms tĩnh tâm
+              this.scene.time.delayedCall(600, () => {
+                // 5. Quay về chỗ ngồi ban đầu
+                this.returnToSeat(original, onComplete);
+              });
+            });
+          });
+        }
+      });
+    };
+
+    // 2. Bước ngang ra lối đi giữa (nếu đang ở dãy bên)
+    if (Math.abs(currentX - altarX) > 40) {
+      this.scene.tweens.add({
+        targets: this.container,
+        x: altarX,
+        duration: 750,
+        ease: 'Linear',
+        onUpdate: () => this.container.setDepth(this.container.y),
+        onComplete: walkToAltar
+      });
+    } else {
+      walkToAltar();
+    }
+  }
+
+  /**
+   * Bước quay về bồ đoàn ban đầu sau khi dâng hương xong
+   */
+  returnToSeat(original, onComplete) {
+    if (this.mode === 'exiting') return;
+
+    this.setSpritePose('walk1');
+    let step = 0;
+    const returnWalk = this.scene.time.addEvent({
+      delay: 240,
+      loop: true,
+      callback: () => {
+        step = (step + 1) % 2;
+        this.setSpritePose(step === 0 ? 'walk1' : 'walk2');
+      }
+    });
+
+    // Chặng 1: Bước dọc lối đi giữa từ Y: 1320 về ngang hàng bồ đoàn
+    this.scene.tweens.add({
+      targets: this.container,
+      x: 540,
+      y: original.y,
+      scale: original.scale,
+      duration: 1600,
+      ease: 'Linear',
+      onUpdate: () => this.container.setDepth(this.container.y),
+      onComplete: () => {
+        // Chặng 2: Rẽ ngang vào bồ đoàn ban đầu
+        this.scene.tweens.add({
+          targets: this.container,
+          x: original.x,
+          y: original.y,
+          duration: 750,
+          ease: 'Linear',
+          onUpdate: () => this.container.setDepth(this.container.y),
+          onComplete: () => {
+            returnWalk.remove(false);
+            // Quỳ xuống bồ đoàn trang nghiêm
+            this.setSpritePose('kneel');
+            this.sprite.y = 0;
+            this.offeringIncense = false;
+            this.startPrayerCycle();
+            onComplete?.();
+          }
+        });
+      }
+    });
+  }
+
+  /**
    * Animation Rời chùa (Exiting):
    * Từ từ đứng dậy, quay người bước đi chậm rãi về phía cổng và mờ dần
    */
@@ -1291,6 +1495,34 @@ class TempleScene extends Phaser.Scene {
         this.presenting = false;
         liveSocket.emit('gift:finished', { id: payload.id });
       });
+    });
+  }
+
+  queueIncense(payload) {
+    this.incenseQueue = this.incenseQueue || [];
+    this.incenseQueue.push(payload);
+    this.drainIncenseQueue();
+  }
+
+  drainIncenseQueue() {
+    this.incenseQueue = this.incenseQueue || [];
+    if (this.currentIncense || !this.incenseQueue.length) return;
+    const item = this.incenseQueue.shift();
+    this.currentIncense = item;
+
+    const person = item.presenceId
+      ? this.worshippers.people.get(item.presenceId)
+      : (item.viewer?.id ? this.worshippers.people.get(item.viewer.id) : null);
+
+    if (!person) {
+      this.currentIncense = null;
+      this.drainIncenseQueue();
+      return;
+    }
+
+    person.offerIncense(() => {
+      this.currentIncense = null;
+      this.time.delayedCall(800, () => this.drainIncenseQueue());
     });
   }
 
@@ -1627,6 +1859,9 @@ liveSocket.on('fortune:draw', (payload) => {
       person.prostrate();
     }
   });
+});
+liveSocket.on('temple:incense', (payload) => {
+  sceneOrQueue((scene) => scene.queueIncense(payload));
 });
 liveSocket.on('connect_error', () => ui.updateLive({ status: 'disconnected' }));
 

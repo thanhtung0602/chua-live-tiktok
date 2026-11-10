@@ -428,6 +428,51 @@ test('tính năng gieo quẻ khi bình luận gieo quẻ hoặc xin quẻ phát 
   temple.destroy();
 });
 
+test('tính năng dâng hương khi bình luận dâng hương phát sự kiện temple:incense và AI đọc lời chúc', async () => {
+  const io = makeIo();
+  const temple = new TempleService({ store: makeStore(), io });
+
+  // 1. Dâng hương bằng bình luận 'con xin dâng hương ạ'
+  const res1 = await temple.handleComment({
+    type: 'comment',
+    text: 'con xin dâng hương ạ',
+    viewer: { id: 'pt_incense_1', username: 'DieuTam', nickname: 'Diệu Tâm' }
+  });
+
+  assert.ok(res1.incense);
+  assert.equal(res1.left, false);
+  assert.equal(res1.incense.viewer.nickname, 'Diệu Tâm');
+
+  // Kiểm tra event temple:incense
+  const incenseEvent = io.events.find((e) => e.name === 'temple:incense');
+  assert.ok(incenseEvent);
+  assert.equal(incenseEvent.payload.viewer.nickname, 'Diệu Tâm');
+
+  // Kiểm tra event speech:announce loại incense
+  const speechEvent = io.events.find((e) => e.name === 'speech:announce' && e.payload.type === 'incense');
+  assert.ok(speechEvent);
+  assert.ok(speechEvent.payload.text.includes('Diệu Tâm'));
+  assert.ok(speechEvent.payload.text.includes('hương') || speechEvent.payload.text.includes('Hương'));
+
+  // 2. Thử biến thể không dấu 'thap huong'
+  const res2 = await temple.handleComment({
+    type: 'comment',
+    text: 'thap huong cau binh an',
+    viewer: { id: 'pt_incense_2', username: 'QuangMinh', nickname: 'Quang Minh' }
+  });
+  assert.ok(res2.incense);
+
+  // 3. Thử qua handleEvent trực tiếp
+  const res3 = await temple.handleEvent({
+    type: 'incense',
+    viewer: { id: 'pt_incense_3', username: 'AnLac', nickname: 'An Lạc' }
+  });
+  assert.ok(res3);
+  assert.equal(res3.viewer.nickname, 'An Lạc');
+
+  temple.destroy();
+});
+
 test('sự kiện follow tự động đưa người vào phòng và phát âm thanh AI cảm ơn chúc phúc', async () => {
   const io = makeIo();
   const temple = new TempleService({ store: makeStore(), io });

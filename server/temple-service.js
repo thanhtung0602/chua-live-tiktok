@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { MAX_SLOTS, publicGift } from './defaults.js';
 import { speechDirector } from './speech.js';
-import { isFortuneRequest, drawRandomFortune, getFortuneSpeech } from './fortune-data.js';
+import { isFortuneRequest, isIncenseRequest, drawRandomFortune, getFortuneSpeech } from './fortune-data.js';
 
 const now = () => new Date().toISOString();
 const clamp = (value, low, high) => Math.min(high, Math.max(low, Number(value) || 0));
@@ -364,13 +364,19 @@ export class TempleService {
     const presence = this.presences.get(viewer.id);
     if (presence) presence.lastActiveAt = now();
 
-    // 1. Kiểm tra yêu cầu gieo quẻ xăm (khi bình luận chứa 'gieo quẻ', 'xin quẻ', ...)
+    // 1. Kiểm tra yêu cầu dâng hương (khi bình luận chứa 'dâng hương', 'thắp hương', ...)
+    if (isIncenseRequest(text)) {
+      const incense = await this.offerIncense(viewer);
+      return { incense, left: false };
+    }
+
+    // 2. Kiểm tra yêu cầu gieo quẻ xăm (khi bình luận chứa 'gieo quẻ', 'xin quẻ', ...)
     if (isFortuneRequest(text)) {
       const fortune = await this.drawFortune(viewer);
       return { fortune, left: false };
     }
 
-    // 2. Kiểm tra từ khóa rời chùa
+    // 3. Kiểm tra từ khóa rời chùa
     const normalized = text.toLocaleLowerCase('vi-VN').trim();
     const leaves = (this.data.settings.leaveKeywords || []).some((keyword) => {
       const needle = clean(keyword, 80).toLocaleLowerCase('vi-VN');
@@ -381,7 +387,7 @@ export class TempleService {
       return { left: true };
     }
 
-    // 3. Tự động đưa Phật tử vào phòng khi phát hiện bất kỳ bình luận nào
+    // 4. Tự động đưa Phật tử vào phòng khi phát hiện bất kỳ bình luận nào
     const existing = this.presences.get(viewer.id);
     const admitted = this.upsertPresence(viewer);
     this.emitMetrics();
@@ -392,6 +398,55 @@ export class TempleService {
       capacityReached: !admitted,
       presence: admitted ? asPublicPresence(admitted) : null
     };
+  }
+
+  async offerIncense(viewer) {
+    if (!viewer) return null;
+    const existing = this.presences.get(viewer.id);
+    const presence = existing || this.upsertPresence(viewer, { temporary: false, instant: false });
+    if (presence) {
+      presence.lastActiveAt = now();
+      if (presence.state === 'exiting') {
+        clearTimeout(presence.exitTimer);
+        presence.exitTimer = null;
+        presence.state = 'praying';
+        this.io.emit('temple:presence:upsert', asPublicPresence(presence));
+      }
+    }
+
+    const speakerName = viewer.nickname || viewer.username || 'Thiện hữu';
+    const speech = this.speechDirector
+      ? this.speechDirector.getIncenseSpeech(viewer)
+      : { text: `Nam Mô A Di Đà Phật! Thiện hữu ${speakerName} chí thành dâng nén tâm hương cúng dường mười phương chư Phật.` };
+
+    const payload = {
+      id: randomUUID(),
+      presenceId: presence?.id || viewer.id,
+      viewer: {
+        id: viewer.id,
+        username: viewer.username || viewer.id,
+        nickname: speakerName,
+        avatarUrl: viewer.avatarUrl || ''
+      },
+      text: speech.text,
+      createdAt: now()
+    };
+
+    // Phát sự kiện nhân vật trong game đứng lên tiến vào giữa gần tượng Phật dâng hương
+    this.io.emit('temple:incense', payload);
+
+    // AI đọc to lời chúc dâng hương thanh tịnh
+    this.io.emit('speech:announce', {
+      id: randomUUID(),
+      type: 'incense',
+      category: 'incense',
+      text: speech.text,
+      speaker: speakerName,
+      url: `/api/tts?text=${encodeURIComponent(speech.text)}`,
+      createdAt: now()
+    });
+
+    return payload;
   }
 
   async drawFortune(viewer) {
@@ -851,6 +906,7 @@ export class TempleService {
     if (event.type === 'follow') return this.handleFollow(event);
     if (event.type === 'leave') return this.handleLeave(event);
     if (event.type === 'fortune') return this.drawFortune(asViewer(event));
+    if (event.type === 'incense') return this.offerIncense(asViewer(event));
     throw new Error('Loại sự kiện không được hỗ trợ.');
   }
 

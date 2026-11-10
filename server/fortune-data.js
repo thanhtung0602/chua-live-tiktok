@@ -177,6 +177,28 @@ export function stripVietnameseMarks(str = '') {
 }
 
 /**
+ * Kiểm tra bình luận có phải yêu cầu dâng hương / thắp hương hay không
+ */
+export function isIncenseRequest(rawText = '') {
+  const norm = stripVietnameseMarks(rawText);
+  if (!norm) return false;
+
+  const directTriggers = [
+    'dang huong', 'thap huong', 'cung huong', 'dot huong',
+    'dang nhang', 'thap nhang', 'cung nhang', 'dot nhang',
+    'danghuong', 'thaphuong', 'dangnhang', 'thapnhang',
+    'xin dang huong', 'con dang huong', 'tam huong', 'nen huong', 'nen nhang'
+  ];
+
+  if (directTriggers.some(t => norm.includes(t))) return true;
+
+  // Kiểm tra kết hợp hành động dâng/thắp/cúng/đốt với hương/nhang
+  const hasAction = norm.includes('dang') || norm.includes('thap') || norm.includes('cung') || norm.includes('dot');
+  const hasItem = norm.includes('huong') || norm.includes('nhang');
+  return hasAction && hasItem;
+}
+
+/**
  * Kiểm tra bình luận có phải yêu cầu gieo quẻ hay không
  */
 export function isFortuneRequest(rawText = '') {

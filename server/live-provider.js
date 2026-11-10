@@ -321,7 +321,7 @@ export class LiveProvider {
 
     if (isLeave) {
       type = 'leave';
-    } else if (!['like', 'gift', 'comment', 'fortune', 'follow'].includes(type)) {
+    } else if (!['like', 'gift', 'comment', 'fortune', 'follow', 'incense'].includes(type)) {
       return null;
     }
 
@@ -365,7 +365,7 @@ export class LiveProvider {
   async ingest(rawEvent) {
     const event = this.normalizeEvent(rawEvent);
     if (!event) {
-      throw new Error('Sự kiện LIVE không hợp lệ. Hỗ trợ: like, gift, comment, leave, fortune, follow.');
+      throw new Error('Sự kiện LIVE không hợp lệ. Hỗ trợ: like, gift, comment, leave, fortune, follow, incense.');
     }
     if (this.status !== 'connected' && this.name !== 'Mock simulator') {
       this.status = 'connected';

@@ -161,6 +161,20 @@ export const BELL_TEMPLATES = [
 ];
 
 /**
+ * 10 mẫu lời chúc trang nghiêm, thanh tịnh khi Phật tử tiến vào dâng hương cúng dường Tam Bảo
+ */
+export const INCENSE_TEMPLATES = [
+  'Nam Mô A Di Đà Phật! Thiện hữu {name} chí thành tiến vào dâng nén tâm hương cúng dường mười phương chư Phật. Nguyện tâm an vạn sự an, phước đức vô lượng, gia đạo bình yên cát tường!',
+  'A Di Đà Phật! Khói trầm hương nghi ngút xông ngát điện Phật. Cảm tạ thiện hữu {name} phát tâm dâng nén hương thơm thanh tịnh, kính chúc bạn bồ đề tâm kiên cố, vạn sự hanh thông như ý!',
+  'Nguyện đem lòng thành kính, gửi theo đám mây hương! Thiện hữu {name} thành tâm dâng hương đảnh lễ Tam Bảo, nguyện cầu hồng ân chư Phật gia hộ cho bạn sở cầu tất ứng, sở nguyện tòng tâm!',
+  'Nam Mô Bổn Sư Thích Ca Mâu Ni Phật! Một nén tâm hương thấu suốt mười phương cõi Phật. Kính chúc thiện hữu {name} tai tiêu nạn khỏi, thân tâm thường lạc, phúc thọ tăng long!',
+  'A Di Đà Phật! Hương trầm thơm ngát tỏa khắp chốn thiền môn. Thiện hữu {name} gieo duyên dâng hương kính Phật, cầu chúc cho bạn và gia đình vạn dặm bình an, trăm năm hạnh phúc!',
+  'Nam Mô Quán Thế Âm Bồ Tát! Nguyện mây hương lành che chở muôn phương. Cảm niệm công đức của bạn {name} dâng hương cầu an, chúc cho gia quyến bạn luôn ấm no, mạnh khỏe và tràn ngập niềm vui!',
+  'A Di Đà Phật! Giới hương, định hương và tuệ hương giải thoát. Thiện hữu {name} dâng nén hương thơm cúng dường Tam Bảo, chúc bạn công thành danh toại, quý nhân phù trợ trên mọi bước đường đời!',
+  'Nam Mô A Di Đà Phật! Thành tâm kính lạy Đức Thế Tôn, thiện hữu {name} phát tâm dâng hương tạo phước. Nguyện ánh sáng từ bi xua tan mọi muộn phiền chướng nạn trong đời bạn!'
+];
+
+/**
  * Trình quản lý lời nói AI với bộ nhớ xoay vòng chống lặp lại câu nói
  */
 export class SpeechDirector {
@@ -170,6 +184,7 @@ export class SpeechDirector {
     this.recentAmbientIndices = [];
     this.recentFollowIndices = [];
     this.recentBellIndices = [];
+    this.recentIncenseIndices = [];
   }
 
   /**
@@ -402,6 +417,46 @@ export class SpeechDirector {
       index: chosenIndex,
       text,
       milestone: milestoneLikes
+    };
+  }
+
+  /**
+   * Chọn lời chúc thanh tịnh khi Phật tử dâng hương, chống lặp câu
+   */
+  getIncenseSpeech(viewer = {}) {
+    const v = viewer || {};
+    const name = clean(v.nickname || v.username || 'thiện hữu', 80);
+    const total = INCENSE_TEMPLATES.length;
+    const historyLimit = Math.min(total - 1, 4);
+
+    let candidateIndices = [];
+    for (let i = 0; i < total; i++) {
+      if (!this.recentIncenseIndices.includes(i)) {
+        candidateIndices.push(i);
+      }
+    }
+    if (candidateIndices.length === 0) {
+      candidateIndices = Array.from({ length: total }, (_, i) => i);
+      this.recentIncenseIndices = [];
+    }
+
+    const chosenIndex = candidateIndices[Math.floor(Math.random() * candidateIndices.length)];
+    this.recentIncenseIndices.push(chosenIndex);
+    if (this.recentIncenseIndices.length > historyLimit) {
+      this.recentIncenseIndices.shift();
+    }
+
+    const template = INCENSE_TEMPLATES[chosenIndex];
+    const text = template
+      .replaceAll('{name}', name)
+      .replaceAll('{username}', v.username || name)
+      .replaceAll('{nickname}', v.nickname || name);
+
+    return {
+      type: 'incense',
+      index: chosenIndex,
+      text,
+      name
     };
   }
 }
