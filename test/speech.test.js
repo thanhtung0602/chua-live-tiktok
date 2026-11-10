@@ -39,14 +39,37 @@ test('SpeechDirector: phân loại danh mục quà tặng chính xác (love, pea
 
 test('SpeechDirector: getGiftThankYouSpeech tạo lời cảm ơn phù hợp với quà tặng và số lượng repeat', () => {
   const director = new SpeechDirector();
-  const gift = { name: 'Hoa hồng', id: 'rose' };
-  const speech = director.getGiftThankYouSpeech({ nickname: 'Thiện Tùng' }, gift, 5);
-  assert.equal(speech.type, 'gift_thanks');
-  assert.equal(speech.category, 'love');
-  assert.ok(speech.text.includes('Thiện Tùng'));
-  assert.ok(speech.text.includes('Hoa hồng ×5'));
-  assert.ok(!speech.text.includes('{name}'));
-  assert.ok(!speech.text.includes('{gift}'));
+  const giftRose = { name: 'Hoa hồng', id: 'rose' };
+  const speechRose = director.getGiftThankYouSpeech({ nickname: 'Thiện Tùng' }, giftRose, 5);
+  assert.equal(speechRose.type, 'gift_thanks');
+  assert.equal(speechRose.category, 'love');
+  assert.ok(speechRose.text.includes('Thiện Tùng'));
+  assert.ok(speechRose.text.includes('Hoa hồng ×5'));
+  assert.ok(speechRose.text.includes('duyên'));
+  assert.ok(!speechRose.text.includes('{name}'));
+  assert.ok(!speechRose.text.includes('{gift}'));
+
+  const giftPeace = { name: 'Bó hoa', id: 'bouquet' };
+  const speechPeace = director.getGiftThankYouSpeech({ nickname: 'Minh Tuệ' }, giftPeace, 1);
+  assert.equal(speechPeace.category, 'peace');
+  assert.ok(speechPeace.text.includes('bình an'));
+
+  const giftHealth = { name: 'Bó hoa mùa xuân', id: 'spring-bouquet' };
+  const speechHealth = director.getGiftThankYouSpeech({ nickname: 'An Lạc' }, giftHealth, 1);
+  assert.equal(speechHealth.category, 'health');
+  assert.ok(speechHealth.text.includes('sức khỏe'));
+
+  const giftLuck = { name: 'Yêu bạn', id: 'love-you' };
+  const speechLuck = director.getGiftThankYouSpeech({ nickname: 'Như Ý' }, giftLuck, 1);
+  assert.equal(speechLuck.category, 'luck');
+  assert.ok(speechLuck.text.includes('may mắn'));
+
+  // Kiểm tra an toàn khi sender hoặc gift là null/undefined
+  const nullSpeech = director.getGiftThankYouSpeech(null, null, 1);
+  assert.equal(nullSpeech.type, 'gift_thanks');
+  assert.ok(nullSpeech.text.includes('thiện hữu'));
+  assert.equal(director.getWelcomeSpeech(null).name, 'thiện hữu');
+  assert.equal(director.getFollowSpeech(null).name, 'thiện hữu');
 });
 
 test('SpeechDirector: getAmbientSpeech sinh lời chúc an lạc định kỳ cho chế độ Treo Live 24/7 và chống lặp', () => {

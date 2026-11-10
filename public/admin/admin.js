@@ -322,7 +322,11 @@ $('#simulate-form').addEventListener('submit', async (event) => {
     delete payload.viewerId; delete payload.username; delete payload.nickname;
   }
   if (simType === 'like') payload.count = Number(payload.count || 1);
-  if (simType === 'gift') payload.repeatCount = 1;
+  if (simType === 'gift') {
+    payload.repeatCount = 1;
+    const selectedGift = state.gifts.find(g => g.providerGiftId === payload.giftId);
+    if (selectedGift) payload.giftName = selectedGift.name;
+  }
   try {
     const result = await api('/api/admin/simulate', { method: 'POST', body: JSON.stringify(payload) });
     toast(result.result?.anonymous ? 'Đã cộng tim ẩn danh, không tạo nhân vật.' : 'Sự kiện đã gửi vào chính điện.');
@@ -655,15 +659,28 @@ $$('[data-quick]').forEach((btn) => btn.addEventListener('click', async () => {
         body: JSON.stringify({ type: 'like', viewerId: id, username: `pt_${id}`, nickname: name, count: 1 })
       });
       toast(`Đã thêm Phật tử: ${name}`);
-    } else if (action === 'gift-lotus' || action === 'gift-bell' || action === 'gift-lion') {
-      const giftId = action === 'gift-lotus' ? 'lotus' : action === 'gift-bell' ? 'bell' : 'lion';
-      const giftName = action === 'gift-lotus' ? 'Hoa sen' : action === 'gift-bell' ? 'Chuông chùa' : 'Sư Tử';
+    if (action.startsWith('gift-')) {
+      const giftMap = {
+        'gift-rose': { id: 'rose', name: 'Hoa hồng', desc: 'Cầu duyên' },
+        'gift-heart': { id: 'heart', name: 'Bắn tim', desc: 'Cầu tình duyên' },
+        'gift-bouquet': { id: 'bouquet', name: 'Bó hoa', desc: 'Cầu bình an' },
+        'gift-spring': { id: 'spring-bouquet', name: 'Bó hoa mùa xuân', desc: 'Cầu sức khỏe' },
+        'gift-loveyou': { id: 'love-you', name: 'Yêu bạn', desc: 'Cầu may mắn' },
+        'gift-clover': { id: 'clover', name: 'Cỏ bốn lá 10xu', desc: 'Gieo quẻ may mắn' },
+        'gift-good': { id: 'good', name: 'Rất tốt', desc: 'Chúc an lành' },
+        'gift-lotus': { id: 'lotus', name: 'Hoa sen', desc: 'Cầu bình an' },
+        'gift-bell': { id: 'bell', name: 'Chuông chùa', desc: 'Đại lễ thỉnh chuông' },
+        'gift-lion': { id: 'lion', name: 'Sư Tử', desc: 'Đại lễ hộ pháp' }
+      };
+      const chosen = giftMap[action] || { id: 'rose', name: 'Hoa hồng', desc: 'Cầu duyên' };
       await api('/api/admin/simulate', {
         method: 'POST',
-        body: JSON.stringify({ type: 'gift', giftId, viewerId: id, username: `pt_${id}`, nickname: name, repeatCount: 1 })
+        body: JSON.stringify({ type: 'gift', giftId: chosen.id, giftName: chosen.name, viewerId: id, username: `pt_${id}`, nickname: name, repeatCount: 1 })
       });
-      toast(`Đã gửi quà: ${giftName} từ ${name}`);
-    } else if (action === 'comment-pray') {
+      toast(`Đã gửi quà: ${chosen.name} (${chosen.desc}) từ ${name}`);
+      return;
+    }
+    if (action === 'comment-pray') {
       await api('/api/admin/simulate', {
         method: 'POST',
         body: JSON.stringify({ type: 'comment', viewerId: id, username: `pt_${id}`, nickname: name, text: 'Nam mô A Di Đà Phật 🙏' })

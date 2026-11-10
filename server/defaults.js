@@ -3,33 +3,69 @@ export const MAX_SLOTS = 36;
 export const defaultGifts = [
   {
     id: 'rose', providerGiftId: 'rose', name: 'Hoa hồng', imageUrl: '',
-    animation: 'offer-flower', soundUrl: '', durationMs: 3600,
-    thankYouTemplate: '🙏 Cảm ơn @{username} đã dâng {gift}!', priority: 10,
-    specialEffect: 'petals', enabled: true
+    animation: 'offer-flower', soundUrl: '', durationMs: 4200,
+    thankYouTemplate: '🌹 @{nickname} dâng Hoa hồng cầu duyên lành. Nguyện đường tình duyên sớm đơm hoa kết trái, trăm năm hòa hợp!',
+    priority: 10, specialEffect: 'petals', enabled: true
   },
   {
-    id: 'small-gift', providerGiftId: 'small-gift', name: 'Quà nhỏ', imageUrl: '',
-    animation: 'lantern', soundUrl: '', durationMs: 3800,
-    thankYouTemplate: '🙏 Cảm ơn @{username} đã thắp sáng một ngọn đèn!', priority: 20,
-    specialEffect: 'lantern', enabled: true
+    id: 'heart', providerGiftId: 'heart', name: 'Bắn tim', imageUrl: '',
+    animation: 'offer-flower', soundUrl: '', durationMs: 4200,
+    thankYouTemplate: '🫰 @{nickname} dâng Bắn tim cầu tình duyên. Nguyện lứa đôi thủy chung gắn kết, một đời yêu thương!',
+    priority: 15, specialEffect: 'petals', enabled: true
+  },
+  {
+    id: 'bouquet', providerGiftId: 'bouquet', name: 'Bó hoa', imageUrl: '',
+    animation: 'offer-flower', soundUrl: '', durationMs: 4200,
+    thankYouTemplate: '🪷 @{nickname} dâng Bó hoa cầu bình an. Cầu mong bốn mùa thân tâm thanh thản, tai qua nạn khỏi!',
+    priority: 30, specialEffect: 'lotus', enabled: true
+  },
+  {
+    id: 'spring-bouquet', providerGiftId: 'spring-bouquet', name: 'Bó hoa mùa xuân', imageUrl: '',
+    animation: 'offer-flower', soundUrl: '', durationMs: 4200,
+    thankYouTemplate: '🌿 @{nickname} dâng Bó hoa mùa xuân cầu sức khỏe. Nguyện thân thể tráng kiện, bệnh tật tiêu trừ, an khang trường thọ!',
+    priority: 35, specialEffect: 'lotus', enabled: true
+  },
+  {
+    id: 'love-you', providerGiftId: 'love-you', name: 'Yêu bạn', imageUrl: '',
+    animation: 'lantern', soundUrl: '', durationMs: 4200,
+    thankYouTemplate: '🍀 @{nickname} dâng Yêu bạn cầu may mắn. Cầu chúc vạn sự như ý, đi đâu cũng có quý nhân phù trợ!',
+    priority: 25, specialEffect: 'lantern', enabled: true
+  },
+  {
+    id: 'clover', providerGiftId: 'clover', name: 'Cỏ bốn lá 10xu', imageUrl: '',
+    animation: 'lantern', soundUrl: '', durationMs: 4200,
+    thankYouTemplate: '🍀 @{nickname} gieo quẻ may mắn với Cỏ bốn lá. Cầu tài đắc tài, cầu lộc đắc lộc, vạn sự hanh thông!',
+    priority: 20, specialEffect: 'lantern', enabled: true
+  },
+  {
+    id: 'good', providerGiftId: 'good', name: 'Rất tốt', imageUrl: '',
+    animation: 'thank', soundUrl: '', durationMs: 3800,
+    thankYouTemplate: '🙏 @{nickname} dâng Rất tốt chúc an lành. Kính chúc gia đạo bình an, phúc thọ tăng long!',
+    priority: 10, specialEffect: 'none', enabled: true
   },
   {
     id: 'lotus', providerGiftId: 'lotus', name: 'Hoa sen', imageUrl: '',
     animation: 'lotus', soundUrl: '', durationMs: 4400,
-    thankYouTemplate: '🙏 Cảm ơn @{username} đã dâng {gift} thanh tịnh!', priority: 35,
-    specialEffect: 'lotus', enabled: true
+    thankYouTemplate: '🪷 @{nickname} dâng Hoa sen cầu bình an. Nguyện bồ đề tâm kiên cố, phước báu lưu phương!',
+    priority: 40, specialEffect: 'lotus', enabled: true
   },
   {
     id: 'bell', providerGiftId: 'bell', name: 'Chuông chùa', imageUrl: '',
     animation: 'bell', soundUrl: '/assets/temple_bell.wav', durationMs: 5000,
-    thankYouTemplate: '🙏 Cảm ơn @{username} đã gửi {gift}!', priority: 60,
-    specialEffect: 'golden-bell', enabled: true
+    thankYouTemplate: '🔔 @{nickname} phát tâm thỉnh Chuông chùa Tam Bảo. Đại hồng chung ngân vang, phước báu vô lượng!',
+    priority: 60, specialEffect: 'golden-bell', enabled: true
   },
   {
     id: 'lion', providerGiftId: 'lion', name: 'Sư Tử', imageUrl: '',
     animation: 'lion-ceremony', soundUrl: '', durationMs: 5600,
-    thankYouTemplate: '🙏 Cảm ơn @{username} đã gửi tặng {gift}!', priority: 100,
-    specialEffect: 'lion', enabled: true
+    thankYouTemplate: '🦁 @{nickname} cúng dường Sư Tử hộ pháp. Dũng mãnh tinh tấn, vạn sự cát tường, công thành danh toại!',
+    priority: 100, specialEffect: 'lion', enabled: true
+  },
+  {
+    id: 'small-gift', providerGiftId: 'small-gift', name: 'Quà nhỏ', imageUrl: '',
+    animation: 'lantern', soundUrl: '', durationMs: 3800,
+    thankYouTemplate: '🙏 Cảm ơn @{nickname} đã thắp sáng một ngọn đèn tâm!',
+    priority: 20, specialEffect: 'lantern', enabled: true
   }
 ];
 

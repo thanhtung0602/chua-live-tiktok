@@ -22,7 +22,25 @@ const PRAYER_SLOTS = [
 const $ = (selector) => document.querySelector(selector);
 const compactNumber = new Intl.NumberFormat('vi-VN', { notation: 'compact', maximumFractionDigits: 1 });
 const fullNumber = new Intl.NumberFormat('vi-VN');
-const giftSymbols = { 'Hoa hồng': '✿', 'Quà nhỏ': '🏮', 'Hoa sen': '🪷', 'Chuông chùa': '🔔', 'Sư Tử': '🦁' };
+const giftSymbols = {
+  'Hoa hồng': '🌹',
+  'Rose': '🌹',
+  'Bắn tim': '🫰',
+  'Finger Heart': '🫰',
+  'Bó hoa': '💐',
+  'Bouquet': '💐',
+  'Bó hoa mùa xuân': '🌸',
+  'Spring Bouquet': '🌸',
+  'Yêu bạn': '🥰',
+  'Love You': '🥰',
+  'Cỏ bốn lá': '🍀',
+  'Cỏ bốn lá 10xu': '🍀',
+  'Rất tốt': '👍',
+  'Hoa sen': '🪷',
+  'Chuông chùa': '🔔',
+  'Sư Tử': '🦁',
+  'Quà nhỏ': '🏮'
+};
 
 const ui = {
   likes: $('#likes-count'),
@@ -160,6 +178,21 @@ const ui = {
     const gift = data.gift || {};
     const name = sender.nickname || sender.username || 'Thiện hữu';
     const username = sender.username ? `@${sender.username.replace(/^@/, '')}` : 'Khách hành hương';
+    const category = data.category || (gift.id?.includes('rose') ? 'love' : 'general');
+
+    const kickerMap = {
+      love: '🌹 CẦU DUYÊN · PHÁT NGUYỆN',
+      peace: '🪷 CẦU BÌNH AN · PHÁT NGUYỆN',
+      health: '🌿 CẦU SỨC KHỎE · PHÁT NGUYỆN',
+      luck: '🍀 CẦU MAY MẮN · PHÁT NGUYỆN',
+      ceremony: '🔔 ĐẠI LỄ TAM BẢO · PHÁT NGUYỆN',
+      general: '🙏 PHÁP DUYÊN CÚNG DƯỜNG'
+    };
+    const kickerEl = this.card.querySelector('.gift-kicker');
+    if (kickerEl) {
+      kickerEl.textContent = kickerMap[category] || '🙏 PHÁP DUYÊN CÚNG DƯỜNG';
+    }
+
     this.nickname.textContent = name;
     this.username.textContent = username;
     this.thanks.textContent = data.thankYou || `🙏 Cảm ơn ${username} đã gửi ${gift.name || 'một món quà'}!`;
@@ -240,7 +273,14 @@ const ui = {
     this.speechBubble.classList.toggle('mode-fortune', isFortune);
     this.speechBubble.classList.toggle('mode-welcome', !isBell && !isGift && !isFollow && !isAmbient && !isFortune);
     this.speechBubble.classList.toggle('mode-ambient', isAmbient);
-    if (this.speechIcon) this.speechIcon.textContent = isBell ? '🔔' : isFortune ? '🎋' : (isGift || isFollow) ? '🪷' : isAmbient ? '🙏' : '🎙️';
+    if (this.speechIcon) {
+      this.speechIcon.textContent = isBell ? '🔔'
+        : isFortune ? '🎋'
+        : isFollow ? '🌸'
+        : isGift ? (payload.category === 'love' ? '🌹' : payload.category === 'health' ? '🌿' : payload.category === 'luck' ? '🍀' : payload.category === 'ceremony' ? '🔔' : '🪷')
+        : isAmbient ? '🙏'
+        : '🎙️';
+    }
     if (this.speechKicker) {
       this.speechKicker.textContent = isBell
         ? `ĐẠI HỒNG CHUNG · HOÀN THÀNH MỐC TIM`
@@ -249,7 +289,12 @@ const ui = {
         : isFollow
         ? `TRI ÂN THEO DÕI · ${payload.speaker || 'ĐẠO HỮU'}`
         : isGift
-        ? 'TRI ÂN CÔNG ĐỨC'
+        ? (payload.category === 'love' ? '🌹 TRI ÂN CẦU DUYÊN'
+          : payload.category === 'peace' ? '🪷 TRI ÂN CẦU BÌNH AN'
+          : payload.category === 'health' ? '🌿 TRI ÂN CẦU SỨC KHỎE'
+          : payload.category === 'luck' ? '🍀 TRI ÂN CẦU MAY MẮN'
+          : payload.category === 'ceremony' ? '🔔 ĐẠI LỄ TAM BẢO'
+          : 'TRI ÂN CÔNG ĐỨC')
         : isAmbient
         ? 'KHUYẾN TẤN AN LẠC'
         : 'LỜI CHÙA';

@@ -1,5 +1,43 @@
 import { TikTokLiveConnection } from 'tiktok-live-connector';
 
+const TIKTOK_GIFT_NAME_MAP = [
+  { match: (id, name, desc) => id === '5655' || id === '5269' || /rose|hồng/i.test(name) || /rose|hồng/i.test(desc), name: 'Hoa hồng', id: 'rose' },
+  { match: (id, name, desc) => id === '8916' || /finger\s*heart|bắn\s*tim/i.test(name) || /bắn\s*tim/i.test(desc), name: 'Bắn tim', id: 'heart' },
+  { match: (id, name, desc) => /spring/i.test(name) || /mùa\s*xuân/i.test(name) || /mùa\s*xuân/i.test(desc), name: 'Bó hoa mùa xuân', id: 'spring-bouquet' },
+  { match: (id, name, desc) => /bouquet|bó\s*hoa/i.test(name) || /bó\s*hoa/i.test(desc), name: 'Bó hoa', id: 'bouquet' },
+  { match: (id, name, desc) => /love\s*you|yêu\s*bạn/i.test(name) || /yêu\s*bạn/i.test(desc), name: 'Yêu bạn', id: 'love-you' },
+  { match: (id, name, desc) => /clover|cỏ\s*bốn\s*lá/i.test(name) || /cỏ/i.test(desc), name: 'Cỏ bốn lá 10xu', id: 'clover' },
+  { match: (id, name, desc) => /very\s*good|rất\s*tốt/i.test(name) || /rất\s*tốt/i.test(desc), name: 'Rất tốt', id: 'good' },
+  { match: (id, name, desc) => /lotus|hoa\s*sen|sen/i.test(name) || /sen/i.test(desc), name: 'Hoa sen', id: 'lotus' },
+  { match: (id, name, desc) => /bell|chuông/i.test(name) || /chuông/i.test(desc), name: 'Chuông chùa', id: 'bell' },
+  { match: (id, name, desc) => /lion|sư\s*tử/i.test(name) || /sư\s*tử/i.test(desc), name: 'Sư Tử', id: 'lion' }
+];
+
+export function extractGift(data = {}) {
+  const rawObj = data.gift || data.giftDetails || data.extendedGiftInfo || {};
+  const rawId = String(data.giftId || rawObj.id || '').trim();
+  const rawName = String(data.giftName || rawObj.name || '').trim();
+  const rawDesc = String(data.describe || rawObj.describe || data.common?.displayText?.defaultPattern || '').trim();
+  const imageUrl = String(data.giftPictureUrl || rawObj.image?.urlList?.[0] || rawObj.icon?.urlList?.[0] || rawObj.giftImage?.urlList?.[0] || '').trim();
+
+  for (const item of TIKTOK_GIFT_NAME_MAP) {
+    if (item.match(rawId, rawName, rawDesc)) {
+      return {
+        id: item.id,
+        name: item.name,
+        imageUrl
+      };
+    }
+  }
+
+  const fallbackName = rawName || rawDesc || (rawId ? `Quà tặng ${rawId}` : 'Quà tặng');
+  return {
+    id: rawId || 'generic',
+    name: fallbackName,
+    imageUrl
+  };
+}
+
 function extractViewer(data = {}) {
   const user = data.user || {};
   const id = data.userId || user.idStr || user.id || data.uniqueId || user.displayId || user.uniqueId;
@@ -123,10 +161,11 @@ export class LiveProvider {
         const uid = viewer?.username || 'viewer';
         const nickname = viewer?.nickname || uid;
 
-        const giftName = data.giftName || data.giftDetails?.giftName || 'Quà tặng';
-        const giftId = data.giftId || giftName;
+        const giftInfo = extractGift(data);
+        const giftName = giftInfo.name;
+        const giftId = giftInfo.id;
         const repeatCount = Number(data.repeatCount || data.count || 1);
-        const giftImageUrl = data.giftPictureUrl || (data.giftDetails?.giftImage?.urlList?.[0]) || '';
+        const giftImageUrl = giftInfo.imageUrl;
 
         console.log(`[TikTok LIVE Gift] 🎁 @${uid} (${nickname}) tặng: ${giftName} x${repeatCount}`);
 
@@ -309,10 +348,11 @@ export class LiveProvider {
     } else if (type === 'follow') {
       normalized.viewer = viewer;
     } else if (type === 'gift') {
-      normalized.giftId = data.giftId || data.giftName || raw.giftId || raw.giftName;
-      normalized.giftName = data.giftName || raw.giftName;
+      const giftInfo = extractGift(data);
+      normalized.giftId = data.giftId || raw.giftId || giftInfo.id;
+      normalized.giftName = data.giftName || raw.giftName || giftInfo.name;
       normalized.repeatCount = Number(data.repeatCount || data.count || raw.repeatCount || 1);
-      normalized.giftImageUrl = data.giftImageUrl || data.imageUrl || raw.giftImageUrl || '';
+      normalized.giftImageUrl = data.giftImageUrl || data.imageUrl || raw.giftImageUrl || giftInfo.imageUrl || '';
     } else if (type === 'comment') {
       normalized.text = String(data.text || data.comment || data.message || data.content || raw.text || '');
     } else if (type === 'leave') {

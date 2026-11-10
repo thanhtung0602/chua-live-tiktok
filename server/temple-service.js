@@ -503,15 +503,26 @@ export class TempleService {
   findGift(event) {
     const rawGift = event?.gift || {};
     const providerGiftId = clean(event?.giftId || rawGift.id || rawGift.giftId || event?.providerGiftId, 128);
+    const giftName = clean(event?.giftName || rawGift.name, 256);
     const config = this.data.gifts.find((gift) => gift.enabled !== false && gift.providerGiftId === providerGiftId)
-      || this.data.gifts.find((gift) => gift.enabled !== false && gift.name === clean(event?.giftName || rawGift.name, 256));
+      || this.data.gifts.find((gift) => gift.enabled !== false && gift.name === giftName)
+      || this.data.gifts.find((gift) => gift.enabled !== false && (gift.name.toLowerCase() === giftName.toLowerCase() || gift.id.toLowerCase() === providerGiftId.toLowerCase()));
     if (config) return publicGift(config);
+
+    const category = this.speechDirector ? this.speechDirector.detectGiftCategory({ id: providerGiftId, name: giftName }) : 'general';
+    const prayerTitle = category === 'love' ? 'cầu duyên'
+      : category === 'peace' ? 'cầu bình an'
+      : category === 'health' ? 'cầu sức khỏe'
+      : category === 'luck' ? 'cầu may mắn'
+      : category === 'ceremony' ? 'thỉnh chuông hộ pháp'
+      : 'gieo duyên lành';
+
     return {
-      id: 'generic', providerGiftId: providerGiftId || 'generic',
-      name: clean(event?.giftName || rawGift.name || 'một món quà', 256),
+      id: providerGiftId || 'generic', providerGiftId: providerGiftId || 'generic',
+      name: giftName || 'Quà phát nguyện',
       imageUrl: clean(event?.giftImageUrl || rawGift.imageUrl, 1024), animation: 'thank', soundUrl: '',
-      durationMs: 3800, thankYouTemplate: '🙏 Cảm ơn @{username} đã gửi {gift}!',
-      priority: 1, specialEffect: 'none', enabled: true
+      durationMs: 4000, thankYouTemplate: `🙏 @{nickname} dâng {gift} ${prayerTitle}!`,
+      priority: 10, specialEffect: 'none', enabled: true
     };
   }
 
@@ -598,19 +609,25 @@ export class TempleService {
       presence.state = 'praying';
       this.io.emit('temple:presence:upsert', asPublicPresence(presence));
     }
-    const thankYou = (this.speechDirector && this.data.settings?.aiVoice?.giftThanksEnabled !== false)
-      ? this.speechDirector.getGiftThankYouSpeech(item.sender, item.gift, item.repeatCount).text
-      : formatThankYou(item.gift.thankYouTemplate, item.sender, item.gift);
+    const speech = (this.speechDirector && this.data.settings?.aiVoice?.giftThanksEnabled !== false)
+      ? this.speechDirector.getGiftThankYouSpeech(item.sender, item.gift, item.repeatCount)
+      : null;
+    const thankYou = speech?.text || formatThankYou(item.gift.thankYouTemplate, item.sender, item.gift);
+    const category = speech?.category || (this.speechDirector ? this.speechDirector.detectGiftCategory(item.gift) : 'general');
+
     this.io.emit('speech:announce', {
       id: randomUUID(),
       type: 'gift_thanks',
+      category,
       text: thankYou,
       speaker: item.sender?.nickname || item.sender?.username || 'Thiện hữu',
       giftName: item.gift.name,
+      url: `/api/tts?text=${encodeURIComponent(thankYou)}`,
       createdAt: now()
     });
     this.io.emit('gift:present', {
       ...item,
+      category,
       sender: item.sender ? { ...item.sender } : null,
       presence: presence ? asPublicPresence(presence) : null,
       thankYou,

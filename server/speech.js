@@ -38,52 +38,52 @@ export const WELCOME_TEMPLATES = [
  * Phân loại theo từng mục đích cầu nguyện (Duyên, Bình An, Sức Khỏe, May Mắn, Đại Lễ)
  */
 export const GIFT_TEMPLATES = {
-  // Cầu duyên, tình duyên (Hoa hồng, Bắn tim)
+  // Cầu duyên, tình duyên (Hoa hồng, Bắn tim, Rose, Heart)
   love: [
-    'A Di Đà Phật! Cảm ơn bạn {name} đã dâng {gift}. Nguyện cầu cho đường tình duyên của bạn sớm đơm hoa kết trái, gặp được người tâm đầu ý hợp.',
-    'Tri ân {name} dâng {gift} cầu duyên. Chúc bạn sớm tìm được một nửa yêu thương, gia đạo thuận hòa, trăm năm hạnh phúc.',
-    'A Di Đà Phật! Cảm ơn thiện hữu {name} đã dâng {gift}. Cầu chúc cho bạn tình duyên viên mãn, ấm êm trọn vẹn.',
-    'Cảm tạ tấm lòng của {name} đã gửi tặng {gift}. Nguyện tình duyên của bạn gặp nhiều thiện duyên, thủy chung son sắt.',
-    'A Di Đà Phật! {gift} thắm đượm chân tình, chúc bạn {name} sớm kết duyên lành, tình yêu viên thành như ý nguyện.',
-    'Tri ân thiện hữu {name} dâng {gift} kết thiện duyên. Nguyện cho gia đình bạn luôn đầy ắp tiếng cười và tình thương.'
+    'A Di Đà Phật! Cảm ơn bạn {name} đã dâng {gift} cầu duyên. Nguyện cầu cho đường tình duyên của bạn sớm đơm hoa kết trái, gặp được người tâm đầu ý hợp.',
+    'Tri ân {name} dâng {gift} cầu duyên lành. Kính chúc bạn sớm tìm được một nửa yêu thương, gia đạo thuận hòa, trăm năm hạnh phúc.',
+    'A Di Đà Phật! Cảm ơn thiện hữu {name} đã dâng {gift} cầu tình duyên. Cầu chúc cho bạn tình duyên viên mãn, ấm êm trọn vẹn.',
+    'Cảm tạ tấm lòng của {name} đã gửi tặng {gift} kết thiện duyên. Nguyện đường tình duyên của bạn gặp nhiều thuận lợi, thủy chung son sắt.',
+    'A Di Đà Phật! {gift} thắm đượm chân tình cầu duyên, chúc bạn {name} sớm kết duyên lành, tình yêu viên thành như ý nguyện.',
+    'Tri ân thiện hữu {name} dâng {gift} cầu tình duyên như ý. Nguyện cho bạn sớm gặp ý trung nhân, gia đình luôn đầy ắp tiếng cười và tình thương.'
   ],
 
-  // Cầu bình an (Bó hoa, Hoa sen)
+  // Cầu bình an (Bó hoa, Hoa sen, Sen, Flower)
   peace: [
     'A Di Đà Phật! Cảm ơn bạn {name} đã dâng {gift} cầu bình an. Nguyện cho bạn và người thân bốn mùa luôn an vui, tai qua nạn khỏi.',
-    'Tri ân {name} đã dâng {gift} thanh tịnh. Nguyện ơn trên che chở cho bạn một đời bình an, tâm an vạn sự an.',
-    'A Di Đà Phật! Cảm ơn bạn {name}. Chúc bạn một đời phong ba dừng sau cánh cửa, chỉ còn lại an yên và bình thản.',
-    'Cảm tạ công đức của {name} dâng {gift} dâng lên Tam Bảo. Nguyện cho gia quyến bạn phúc ấm dài lâu, thân tâm thanh tịnh.',
-    'A Di Đà Phật! Tri ân đóa {gift} thơm ngát của bạn {name}. Cầu mong mười phương chư Phật luôn gia hộ cho bạn bình an.',
-    'Xin hồi hướng công đức {gift} của bạn {name}. Nguyện cho mọi bão giông cuộc đời đều hóa thành mây khói nhẹ nhàng.'
+    'Tri ân {name} đã dâng {gift} cầu bình an thanh tịnh. Nguyện ơn trên che chở cho bạn một đời bình an, tâm an vạn sự an.',
+    'A Di Đà Phật! Cảm ơn bạn {name} dâng {gift} cầu bình an. Chúc bạn một đời phong ba dừng sau cánh cửa, chỉ còn lại an yên và bình thản.',
+    'Cảm tạ công đức của {name} dâng {gift} cầu bình an dâng lên Tam Bảo. Nguyện cho gia quyến bạn phúc ấm dài lâu, thân tâm thanh tịnh.',
+    'A Di Đà Phật! Tri ân đóa {gift} thơm ngát của bạn {name} dâng cầu bình an. Cầu mong mười phương chư Phật luôn gia hộ cho bạn bình an.',
+    'Xin hồi hướng công đức {gift} cầu bình an của bạn {name}. Nguyện cho mọi bão giông cuộc đời đều hóa thành mây khói nhẹ nhàng.'
   ],
 
-  // Cầu sức khỏe (Bó hoa mùa xuân)
+  // Cầu sức khỏe (Bó hoa mùa xuân, Xuân, Sức khỏe)
   health: [
     'A Di Đà Phật! Cảm ơn bạn {name} đã dâng {gift} cầu sức khỏe. Nguyện chúc bạn thân thể tráng kiện, bệnh tật tiêu trừ, sống vui mỗi ngày.',
-    'Tri ân tấm lòng của {name} dâng {gift} mùa xuân. Chúc bạn cùng cha mẹ gia đình luôn dồi dào sinh lực, an khang trường thọ.',
-    'A Di Đà Phật! Cảm ơn {name} đã dâng {gift}. Cầu chúc cho bạn sức khỏe dẻo dai, tinh thần luôn tươi vui sảng khoái.',
-    'Tấm lòng hiếu đạo và từ bi của {name} dâng {gift}. Nguyện cho sức khỏe của bạn và người thân luôn vững vàng như núi thái sơn.',
-    'A Di Đà Phật! Tri ân thiện hữu {name} dâng {gift}. Chúc bạn thân tâm khinh an, đẩy lùi mọi phiền não tật bệnh.',
+    'Tri ân tấm lòng của {name} dâng {gift} cầu sức khỏe mùa xuân. Chúc bạn cùng cha mẹ gia đình luôn dồi dào sinh lực, an khang trường thọ.',
+    'A Di Đà Phật! Cảm ơn {name} đã dâng {gift} cầu sức khỏe. Cầu chúc cho bạn sức khỏe dẻo dai, tinh thần luôn tươi vui sảng khoái.',
+    'Tấm lòng hiếu đạo và từ bi của {name} dâng {gift} cầu sức khỏe. Nguyện cho sức khỏe của bạn và người thân luôn vững vàng như núi thái sơn.',
+    'A Di Đà Phật! Tri ân thiện hữu {name} dâng {gift} cầu sức khỏe. Chúc bạn thân tâm khinh an, đẩy lùi mọi phiền não tật bệnh.',
     'Cảm ơn bạn {name} dâng {gift} cầu sức khỏe. Nguyện ơn trên ban phước lành để bạn luôn khỏe mạnh, tươi vui và an lạc.'
   ],
 
-  // Cầu may mắn, gieo quẻ (Yêu bạn, Cỏ bốn lá 10xu)
+  // Cầu may mắn, gieo quẻ (Yêu bạn, Cỏ bốn lá 10xu, Rất tốt)
   luck: [
-    'A Di Đà Phật! Cỏ bốn lá gieo duyên may mắn. Chúc bạn {name} trăm sự cát tường, cầu tài đắc tài, cầu lộc đắc lộc.',
-    'Cảm ơn bạn {name} đã gửi {gift} may mắn. Nguyện cầu vạn sự khởi sắc, tài lộc hanh thông, công danh rộng mở.',
-    'A Di Đà Phật! Cảm ơn món quà yêu thương {gift} từ bạn {name}. Chúc bạn đi đâu cũng có quý nhân phù trợ, may mắn song hành.',
-    'Tri ân tấm lòng của {name} gửi tặng {gift}. Nguyện cho mọi dự định làm ăn của bạn đều xuôi chèo mát mái, tài lộc dồi dào.',
-    'A Di Đà Phật! Gieo quẻ lành trao {gift}, chúc bạn {name} gặp nhiều may mắn bất ngờ, buôn may bán đắt, vạn sự hanh thông.',
-    'Cảm ơn thiện hữu {name} đã trao gửi {gift}. Nguyện chúc bạn một năm phước lộc tràn trề, công thành danh toại.'
+    'A Di Đà Phật! Gieo quẻ may mắn với {gift}. Chúc bạn {name} trăm sự cát tường, cầu tài đắc tài, cầu lộc đắc lộc.',
+    'Cảm ơn bạn {name} đã gửi {gift} cầu may mắn. Nguyện cầu vạn sự khởi sắc, tài lộc hanh thông, công danh rộng mở.',
+    'A Di Đà Phật! Cảm ơn món quà yêu thương {gift} cầu may mắn từ bạn {name}. Chúc bạn đi đâu cũng có quý nhân phù trợ, may mắn song hành.',
+    'Tri ân tấm lòng của {name} gửi tặng {gift} cầu may mắn. Nguyện cho mọi dự định làm ăn của bạn đều xuôi chèo mát mái, tài lộc dồi dào.',
+    'A Di Đà Phật! Gieo quẻ lành trao {gift} cầu may mắn, chúc bạn {name} gặp nhiều may mắn bất ngờ, buôn may bán đắt, vạn sự hanh thông.',
+    'Cảm ơn thiện hữu {name} đã trao gửi {gift} gieo quẻ may mắn. Nguyện chúc bạn một năm phước lộc tràn trề, công thành danh toại.'
   ],
 
   // Đại lễ, Chuông chùa, Sư tử (Quà trang trọng cao cấp)
   ceremony: [
-    'Chuông chùa ngân vang rền khắp mười phương! Cảm tạ đại đức của bạn {name} đã dâng {gift}. Nguyện phước báu lưu phương muôn đời.',
-    'A Di Đà Phật! Tiếng chuông thanh tịnh đánh thức bồ đề tâm. Tri ân thiện hữu {name} đã dâng {gift}. Chúc bạn vạn sự viên thành!',
+    'Chuông chùa ngân vang rền khắp mười phương! Cảm tạ đại đức của bạn {name} đã phát tâm cúng dường {gift}. Nguyện phước báu lưu phương muôn đời.',
+    'A Di Đà Phật! Tiếng chuông thanh tịnh đánh thức bồ đề tâm. Tri ân thiện hữu {name} đã phát tâm dâng {gift}. Chúc bạn vạn sự viên thành!',
     'Đại lễ trang nghiêm hoan hỷ! Cảm ơn tấm lòng đại công đức của bạn {name} đã dâng {gift}. Chúc bạn sự nghiệp hưng vượng, phước đức ngập tràn.',
-    'A Di Đà Phật! Sư tử hộ pháp uy linh, cảm tạ đại công đức của bạn {name} với món quà {gift}. Chúc bạn dũng mãnh tinh tấn, vạn sự cát tường!',
+    'A Di Đà Phật! Sư tử hộ pháp uy linh dũng mãnh, cảm tạ đại công đức của bạn {name} với món quà {gift}. Chúc bạn dũng mãnh tinh tấn, vạn sự cát tường!',
     'Tiếng chuông sớm hôm xua tan muôn phiền não. Cảm ơn bạn {name} đã phát tâm dâng {gift} công đức vô lượng!',
     'A Di Đà Phật! Đạo tràng vô cùng hoan hỷ trước đại đức cúng dường {gift} của bạn {name}. Nguyện phước báu vô lượng đời đời bền vững.'
   ],
@@ -176,7 +176,8 @@ export class SpeechDirector {
    * Chọn câu chào mừng ngẫu nhiên không lặp lại
    */
   getWelcomeSpeech(viewer = {}) {
-    const name = clean(viewer.nickname || viewer.username || 'thiện hữu', 80);
+    const v = viewer || {};
+    const name = clean(v.nickname || v.username || 'thiện hữu', 80);
     const total = WELCOME_TEMPLATES.length;
     const historyLimit = Math.min(total - 1, 10);
 
@@ -201,8 +202,8 @@ export class SpeechDirector {
     const template = WELCOME_TEMPLATES[chosenIndex];
     const text = template
       .replaceAll('{name}', name)
-      .replaceAll('{username}', viewer.username || name)
-      .replaceAll('{nickname}', viewer.nickname || name);
+      .replaceAll('{username}', v.username || name)
+      .replaceAll('{nickname}', v.nickname || name);
 
     return {
       type: 'welcome',
@@ -220,19 +221,24 @@ export class SpeechDirector {
     const name = String(gift.name || '').toLowerCase();
     const effect = String(gift.specialEffect || '').toLowerCase();
 
+    // 1. Đại Lễ Chuông Chùa / Sư Tử
     if (id.includes('bell') || id.includes('lion') || name.includes('chuông') || name.includes('sư tử') || effect.includes('bell') || effect.includes('lion')) {
       return 'ceremony';
     }
-    if (name.includes('sức khỏe') || name.includes('mùa xuân') || id.includes('spring')) {
+    // 2. Cầu Sức Khỏe (Bó hoa mùa xuân, xuân, sức khỏe)
+    if (name.includes('sức khỏe') || name.includes('mùa xuân') || name.includes('hoa xuân') || id.includes('spring') || id.includes('health')) {
       return 'health';
     }
-    if (name.includes('bình an') || name.includes('bó hoa') || id.includes('flower') || id.includes('lotus') || name.includes('sen')) {
-      return 'peace';
-    }
-    if (name.includes('may mắn') || name.includes('cỏ') || name.includes('quẻ') || name.includes('yêu bạn') || id.includes('clover') || id.includes('love')) {
+    // 3. Cầu May Mắn / Gieo Quẻ (Yêu bạn, Cỏ bốn lá, Cỏ, Quẻ, Rất tốt, May mắn)
+    if (name.includes('may mắn') || name.includes('cỏ') || name.includes('quẻ') || name.includes('yêu bạn') || name.includes('rất tốt') || id.includes('clover') || id.includes('love-you') || id.includes('good') || id.includes('luck')) {
       return 'luck';
     }
-    if (name.includes('duyên') || name.includes('hồng') || name.includes('tim') || id.includes('rose') || id.includes('heart')) {
+    // 4. Cầu Bình An (Bó hoa, Hoa sen, Sen, Bình an)
+    if (name.includes('bình an') || name.includes('bó hoa') || id.includes('flower') || id.includes('lotus') || name.includes('sen') || id.includes('peace') || id.includes('bouquet')) {
+      return 'peace';
+    }
+    // 5. Cầu Duyên, Tình Duyên (Hoa hồng, Bắn tim, Rose, Heart)
+    if (name.includes('duyên') || name.includes('hồng') || name.includes('bắn tim') || id.includes('rose') || id.includes('heart') || id === 'love' || (id.includes('love') && !id.includes('clover') && !id.includes('love-you'))) {
       return 'love';
     }
     return 'general';
@@ -242,13 +248,15 @@ export class SpeechDirector {
    * Chọn lời cảm ơn dâng quà ngẫu nhiên theo danh mục và chống lặp
    */
   getGiftThankYouSpeech(sender = {}, gift = {}, repeatCount = 1) {
-    const name = clean(sender.nickname || sender.username || 'thiện hữu', 80);
-    let giftName = clean(gift.name || 'món quà', 80);
+    const s = sender || {};
+    const g = gift || {};
+    const name = clean(s.nickname || s.username || 'thiện hữu', 80);
+    let giftName = clean(g.name || 'món quà', 80);
     if (repeatCount > 1) {
       giftName = `${giftName} ×${repeatCount}`;
     }
 
-    const category = this.detectGiftCategory(gift);
+    const category = this.detectGiftCategory(g);
     const templates = GIFT_TEMPLATES[category] || GIFT_TEMPLATES.general;
     const total = templates.length;
     const historyLimit = Math.min(total - 1, 4);
@@ -276,8 +284,8 @@ export class SpeechDirector {
     const template = templates[chosenIndex];
     const text = template
       .replaceAll('{name}', name)
-      .replaceAll('{username}', sender.username || name)
-      .replaceAll('{nickname}', sender.nickname || name)
+      .replaceAll('{username}', s.username || name)
+      .replaceAll('{nickname}', s.nickname || name)
       .replaceAll('{gift}', giftName);
 
     return {
@@ -325,7 +333,8 @@ export class SpeechDirector {
    * Chọn lời cảm ơn và chúc phúc ngẫu nhiên khi có người follow kênh, chống lặp
    */
   getFollowSpeech(viewer = {}) {
-    const name = clean(viewer.nickname || viewer.username || 'thiện hữu', 80);
+    const v = viewer || {};
+    const name = clean(v.nickname || v.username || 'thiện hữu', 80);
     const total = FOLLOW_TEMPLATES.length;
     const historyLimit = Math.min(total - 1, 6);
 
@@ -349,8 +358,8 @@ export class SpeechDirector {
     const template = FOLLOW_TEMPLATES[chosenIndex];
     const text = template
       .replaceAll('{name}', name)
-      .replaceAll('{username}', viewer.username || name)
-      .replaceAll('{nickname}', viewer.nickname || name);
+      .replaceAll('{username}', v.username || name)
+      .replaceAll('{nickname}', v.nickname || name);
 
     return {
       type: 'follow',
