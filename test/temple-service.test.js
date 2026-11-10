@@ -372,6 +372,21 @@ test('Lễ Hồi Hướng: kích hoạt nghi lễ và cập nhật trạng thái
   temple.destroy();
 });
 
+test('bình luận bất kỳ đưa Phật tử vào phòng chiếm bồ đoàn và kích hoạt lễ Phật', async () => {
+  const temple = new TempleService({ store: makeStore(), io: makeIo() });
+  const result = await temple.handleComment({
+    type: 'comment',
+    text: 'A di đà phật con chào thầy',
+    viewer: { id: 'new_commenter_99', username: 'phattu_moi', nickname: 'Phật Tử Mới' }
+  });
+
+  assert.equal(result.left, false);
+  assert.equal(result.created, true);
+  assert.ok(temple.presences.has('new_commenter_99'));
+  assert.equal(temple.presences.get('new_commenter_99').state, 'entering');
+  temple.destroy();
+});
+
 test('tính năng gieo quẻ khi bình luận gieo quẻ hoặc xin quẻ phát sự kiện và AI đọc quẻ', async () => {
   const io = makeIo();
   const temple = new TempleService({ store: makeStore(), io });

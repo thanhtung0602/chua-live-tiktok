@@ -326,7 +326,18 @@ export class TempleService {
       this.leavePresence(viewer.id, 'comment');
       return { left: true };
     }
-    return { left: false };
+
+    // 3. Tự động đưa Phật tử vào phòng khi phát hiện bất kỳ bình luận nào
+    const existing = this.presences.get(viewer.id);
+    const admitted = this.upsertPresence(viewer);
+    this.emitMetrics();
+
+    return {
+      left: false,
+      created: !existing && Boolean(admitted),
+      capacityReached: !admitted,
+      presence: admitted
+    };
   }
 
   async drawFortune(viewer) {
