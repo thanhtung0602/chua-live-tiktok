@@ -58,6 +58,7 @@ export class TempleService {
     this.speechDirector = speechDirector;
     this.sweepTimer = setInterval(() => this.sweepInactive(), 5000);
     this.sweepTimer.unref?.();
+    this.recentChats = [];
 
     // Mốc 1000 tim thỉnh Đại Hồng Chung & Lễ Hồi Hướng mỗi 10 phút
     this.bellMilestone = 1000;
@@ -163,6 +164,7 @@ export class TempleService {
       },
       presences: [...this.presences.values()].map(asPublicPresence),
       topDonors: (this.data.topDonors || []).slice(0, 10),
+      recentChats: this.recentChats.slice(-25),
       live: this.liveStatus
     };
   }
@@ -363,6 +365,24 @@ export class TempleService {
     if (!viewer) return { ignored: true, reason: 'anonymous-comment' };
     const presence = this.presences.get(viewer.id);
     if (presence) presence.lastActiveAt = now();
+
+    // Phát sự kiện tin nhắn hiển thị trong Khung Chat Trực Tiếp trên màn hình
+    const chatPayload = {
+      id: randomUUID(),
+      eventId: clean(event?.eventId || event?.id, 128),
+      presenceId: presence?.id || viewer.id,
+      viewer: {
+        id: viewer.id,
+        username: viewer.username || viewer.id,
+        nickname: viewer.nickname || viewer.username || 'Thiện hữu',
+        avatarUrl: viewer.avatarUrl || ''
+      },
+      text,
+      createdAt: now()
+    };
+    this.recentChats.push(chatPayload);
+    if (this.recentChats.length > 50) this.recentChats.shift();
+    this.io.emit('chat:message', chatPayload);
 
     // 1. Kiểm tra yêu cầu dâng hương (khi bình luận chứa 'dâng hương', 'thắp hương', ...)
     if (isIncenseRequest(text)) {

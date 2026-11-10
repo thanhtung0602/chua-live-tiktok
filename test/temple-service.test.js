@@ -373,7 +373,8 @@ test('Lễ Hồi Hướng: kích hoạt nghi lễ và cập nhật trạng thái
 });
 
 test('bình luận bất kỳ đưa Phật tử vào phòng chiếm bồ đoàn và kích hoạt lễ Phật', async () => {
-  const temple = new TempleService({ store: makeStore(), io: makeIo() });
+  const io = makeIo();
+  const temple = new TempleService({ store: makeStore(), io });
   const result = await temple.handleComment({
     type: 'comment',
     text: 'A di đà phật con chào thầy',
@@ -384,6 +385,15 @@ test('bình luận bất kỳ đưa Phật tử vào phòng chiếm bồ đoàn 
   assert.equal(result.created, true);
   assert.ok(temple.presences.has('new_commenter_99'));
   assert.equal(temple.presences.get('new_commenter_99').state, 'entering');
+
+  // Kiểm tra sự kiện chat:message được phát ra cho khung chat hiển thị
+  const chatEvt = io.events.find((e) => e.name === 'chat:message');
+  assert.ok(chatEvt);
+  assert.equal(chatEvt.payload.text, 'A di đà phật con chào thầy');
+  assert.equal(chatEvt.payload.viewer.nickname, 'Phật Tử Mới');
+  assert.equal(temple.recentChats.length, 1);
+  assert.equal(temple.snapshot().recentChats.length, 1);
+
   temple.destroy();
 });
 

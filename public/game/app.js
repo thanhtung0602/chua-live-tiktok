@@ -65,6 +65,75 @@ const ui = {
   giftName: $('#gift-name'),
   soundPrompt: $('#sound-prompt'),
   donorList: $('#donor-list'),
+  chatList: $('#chat-list'),
+  chatBody: $('#chat-body'),
+  chatBox: $('#live-chat-box'),
+  seenChatIds: new Set(),
+  appendChatMessage(chat) {
+    if (!this.chatList || !chat?.text) return;
+    const cid = chat.id || chat.eventId;
+    if (cid && this.seenChatIds.has(cid)) return;
+    if (cid) {
+      this.seenChatIds.add(cid);
+      if (this.seenChatIds.size > 200) this.seenChatIds.delete(this.seenChatIds.values().next().value);
+    }
+
+    const viewer = chat.viewer || {};
+    const name = viewer.nickname || viewer.username || 'Thiện hữu';
+    const avatarUrl = viewer.avatarUrl;
+
+    const li = document.createElement('li');
+    li.className = 'chat-item';
+
+    if (avatarUrl) {
+      const img = document.createElement('img');
+      img.className = 'chat-avatar';
+      img.src = avatarUrl;
+      img.alt = '';
+      img.onerror = () => {
+        img.remove();
+        const placeholder = document.createElement('span');
+        placeholder.className = 'chat-avatar-placeholder';
+        placeholder.textContent = '🪷';
+        li.prepend(placeholder);
+      };
+      li.appendChild(img);
+    } else {
+      const placeholder = document.createElement('span');
+      placeholder.className = 'chat-avatar-placeholder';
+      placeholder.textContent = '🪷';
+      li.appendChild(placeholder);
+    }
+
+    const content = document.createElement('div');
+    content.className = 'chat-content';
+
+    const userSpan = document.createElement('span');
+    userSpan.className = 'chat-user';
+    userSpan.textContent = name;
+
+    const textSpan = document.createElement('span');
+    textSpan.className = 'chat-text';
+    textSpan.textContent = chat.text;
+
+    content.appendChild(userSpan);
+    content.appendChild(textSpan);
+    li.appendChild(content);
+
+    this.chatList.appendChild(li);
+
+    while (this.chatList.children.length > 30) {
+      this.chatList.firstElementChild.remove();
+    }
+
+    if (this.chatBody) {
+      this.chatBody.scrollTop = this.chatBody.scrollHeight;
+    }
+  },
+  initChat(chats = []) {
+    if (!Array.isArray(chats) || !chats.length) return;
+    chats.forEach((c) => this.appendChatMessage(c));
+  },
   showBellMilestone(payload) {
     if (!this.bellBanner) return;
     if (this.bellBannerSub && payload?.milestone) {
@@ -1231,6 +1300,77 @@ class RealisticWorshipper {
   }
 
   /**
+   * Hiển thị bong bóng chat sinh động trên đầu nhân vật khi bình luận
+   */
+  showChatBubble(text) {
+    if (!text || this.mode === 'exiting') return;
+    if (this.chatBubbleContainer) {
+      this.chatBubbleContainer.destroy(true);
+      this.chatBubbleContainer = null;
+    }
+
+    const cleanText = text.length > 32 ? `${text.slice(0, 31)}…` : text;
+    const bubble = this.scene.add.container(0, -170);
+
+    const txt = this.scene.add.text(0, 0, cleanText, {
+      fontFamily: '"Be Vietnam Pro", "Segoe UI", Arial, sans-serif',
+      fontSize: '20px',
+      fontWeight: '600',
+      color: '#ffffff',
+      stroke: '#0e0711',
+      strokeThickness: 3,
+      align: 'center'
+    }).setOrigin(0.5);
+
+    const padX = 22;
+    const padY = 12;
+    const w = Math.max(80, txt.width + padX);
+    const h = txt.height + padY;
+
+    const bg = this.scene.add.graphics();
+    bg.fillStyle(0x130a17, 0.92);
+    bg.fillRoundedRect(-w / 2, -h / 2, w, h, 12);
+    bg.lineStyle(1.8, 0xf6cb65, 0.95);
+    bg.strokeRoundedRect(-w / 2, -h / 2, w, h, 12);
+
+    bg.fillStyle(0x130a17, 0.92);
+    bg.fillTriangle(0, h / 2 + 7, -5, h / 2 - 1, 5, h / 2 - 1);
+    bg.lineStyle(1.8, 0xf6cb65, 0.95);
+    bg.lineBetween(-5, h / 2 - 1, 0, h / 2 + 7);
+    bg.lineBetween(0, h / 2 + 7, 5, h / 2 - 1);
+
+    bubble.add([bg, txt]);
+    bubble.setScale(0.85).setAlpha(0);
+    this.container.add(bubble);
+    this.chatBubbleContainer = bubble;
+
+    this.scene.tweens.add({
+      targets: bubble,
+      scale: 1,
+      alpha: 1,
+      y: -180,
+      duration: 220,
+      ease: 'Back.out'
+    });
+
+    this.scene.time.delayedCall(4500, () => {
+      if (this.chatBubbleContainer === bubble) {
+        this.scene.tweens.add({
+          targets: bubble,
+          alpha: 0,
+          y: -195,
+          duration: 320,
+          ease: 'Sine.in',
+          onComplete: () => {
+            bubble.destroy(true);
+            if (this.chatBubbleContainer === bubble) this.chatBubbleContainer = null;
+          }
+        });
+      }
+    });
+  }
+
+  /**
    * Animation Rời chùa (Exiting):
    * Từ từ đứng dậy, quay người bước đi chậm rãi về phía cổng và mờ dần
    */
@@ -1276,6 +1416,7 @@ class RealisticWorshipper {
   destroy() {
     this.stopPrayerCycle();
     if (this.walkTimer) this.walkTimer.remove(false);
+    if (this.chatBubbleContainer) this.chatBubbleContainer.destroy(true);
     this.scene.tweens.killTweensOf(this.container);
     this.container.destroy(true);
   }
@@ -1773,6 +1914,7 @@ liveSocket.on('temple:snapshot', (snapshot) => {
   ui.updateMetrics(snapshot.metrics);
   ui.updateLive(snapshot.live);
   ui.updateLeaderboard(snapshot.topDonors || []);
+  if (snapshot.recentChats) ui.initChat(snapshot.recentChats);
   if (snapshot.ceremony?.nextCeremonyAt) {
     nextCeremonyTimestamp = snapshot.ceremony.nextCeremonyAt;
     tickCeremonyTimer();
@@ -1790,6 +1932,7 @@ async function loadInitialState() {
     if (state.metrics) ui.updateMetrics(state.metrics);
     if (state.live) ui.updateLive(state.live);
     if (state.topDonors) ui.updateLeaderboard(state.topDonors);
+    if (state.recentChats) ui.initChat(state.recentChats);
     if (state.ceremony?.nextCeremonyAt) {
       nextCeremonyTimestamp = state.ceremony.nextCeremonyAt;
       tickCeremonyTimer();
@@ -1863,6 +2006,17 @@ liveSocket.on('fortune:draw', (payload) => {
 liveSocket.on('temple:incense', (payload) => {
   sceneOrQueue((scene) => scene.queueIncense(payload));
 });
+liveSocket.on('chat:message', (payload) => {
+  ui.appendChatMessage(payload);
+  sceneOrQueue((scene) => {
+    const person = payload.presenceId
+      ? scene.worshippers?.people?.get(payload.presenceId)
+      : (payload.viewer?.id ? scene.worshippers?.people?.get(payload.viewer.id) : null);
+    if (person && typeof person.showChatBubble === 'function') {
+      person.showChatBubble(payload.text);
+    }
+  });
+});
 liveSocket.on('connect_error', () => ui.updateLive({ status: 'disconnected' }));
 
 const unlockAll = () => {
@@ -1885,6 +2039,13 @@ $('#toggle-gift-guide')?.addEventListener('click', () => {
   try { localStorage.setItem('giftGuideCollapsed', guide.classList.contains('panel-collapsed') ? '1' : '0'); } catch (_) {}
 });
 
+$('#toggle-chat-box')?.addEventListener('click', () => {
+  const box = $('#live-chat-box');
+  if (!box) return;
+  box.classList.toggle('panel-collapsed');
+  try { localStorage.setItem('chatBoxCollapsed', box.classList.contains('panel-collapsed') ? '1' : '0'); } catch (_) {}
+});
+
 $('#fortune-close-btn')?.addEventListener('click', () => ui.hideFortune());
 
 // Khôi phục trạng thái thu gọn đã lưu từ phiên trước
@@ -1894,5 +2055,8 @@ try {
   }
   if (localStorage.getItem('donorBoardCollapsed') === '1') {
     $('#donor-board')?.classList.add('panel-collapsed');
+  }
+  if (localStorage.getItem('chatBoxCollapsed') === '1') {
+    $('#live-chat-box')?.classList.add('panel-collapsed');
   }
 } catch (_) {}
