@@ -1,32 +1,224 @@
-/*
-  This boundary deliberately does not scrape TikTok or open undocumented LIVE
-  sockets. In production, point an authorized provider/API at /api/live/events
-  and validate its secret/signature before normalized events reach the game.
-*/
+import { TikTokLiveConnection } from 'tiktok-live-connector';
+
 export class LiveProvider {
-  constructor({ name = 'Mock simulator', onEvent, onStatus }) {
+  constructor({ name = 'tiktok-connector', onEvent, onStatus }) {
     this.name = name;
     this.onEvent = onEvent;
     this.onStatus = onStatus;
     this.status = 'disconnected';
     this.channel = '';
+    this.liveConnection = null;
+    this.reconnectTimer = null;
+    this.roomId = null;
   }
 
   connect(channel = '') {
     this.channel = String(channel || '').trim();
-    this.status = this.name === 'Mock simulator' ? 'simulated' : 'awaiting-webhook';
+    const clean = this.channel.replace(/^@/, '').trim();
+
+    if (!clean || this.name === 'Mock simulator') {
+      this.status = this.name === 'Mock simulator' ? 'simulated' : 'awaiting-webhook';
+      this.onStatus?.(this.snapshot());
+      return this.snapshot();
+    }
+
+    if (this.name === 'tiktok-webhook' || this.name === 'Authorized TikTok API') {
+      this.status = 'awaiting-webhook';
+      this.onStatus?.(this.snapshot());
+      return this.snapshot();
+    }
+
+    // Kết nối trực tiếp TikTok LIVE qua TikTokLiveConnection
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+    if (this.liveConnection) {
+      try { this.liveConnection.disconnect(); } catch {}
+      this.liveConnection = null;
+    }
+
+    this.status = 'connecting';
     this.onStatus?.(this.snapshot());
+
+    // Khởi chạy kết nối bất đồng bộ
+    this.#initDirectConnection(clean).catch((err) => {
+      console.warn(`[TikTok LIVE] Lỗi khởi tạo kết nối: ${err.message}`);
+    });
+
     return this.snapshot();
   }
 
+  async #initDirectConnection(username) {
+    try {
+      this.liveConnection = new TikTokLiveConnection(username, {
+        processInitialData: false,
+        fetchRoomInfoOnConnect: true
+      });
+
+      this.liveConnection.on('chat', (data) => {
+        const comment = String(data.comment || data.content || '').trim();
+        const user = data.user || {};
+        const uid = data.uniqueId || user.displayId || user.uniqueId || user.id || 'viewer';
+        const nickname = data.nickname || user.nickname || uid;
+        const avatar = data.profilePictureUrl ||
+          (user.avatarThumb?.urlListList?.[0]) ||
+          (user.avatarMedium?.urlListList?.[0]) ||
+          (data.userDetails?.profilePictureUrls?.[0]) || '';
+
+        console.log(`[TikTok LIVE Chat] 💬 @${uid} (${nickname}): "${comment}"`);
+
+        this.ingest({
+          type: 'comment',
+          eventId: `tt-chat-${data.msgId || Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          data: {
+            text: comment,
+            viewer: {
+              id: String(data.userId || user.id || uid),
+              username: String(uid),
+              nickname: String(nickname),
+              avatarUrl: String(avatar)
+            }
+          }
+        }).catch((err) => console.error('[LiveProvider] Lỗi xử lý comment:', err.message));
+      });
+
+      this.liveConnection.on('gift', (data) => {
+        const user = data.user || {};
+        const uid = data.uniqueId || user.displayId || user.uniqueId || user.id || 'viewer';
+        const nickname = data.nickname || user.nickname || uid;
+        const avatar = data.profilePictureUrl ||
+          (user.avatarThumb?.urlListList?.[0]) ||
+          (user.avatarMedium?.urlListList?.[0]) ||
+          (data.userDetails?.profilePictureUrls?.[0]) || '';
+
+        const giftName = data.giftName || data.giftDetails?.giftName || 'Quà tặng';
+        const giftId = data.giftId || giftName;
+        const repeatCount = Number(data.repeatCount || data.count || 1);
+        const giftImageUrl = data.giftPictureUrl || (data.giftDetails?.giftImage?.urlList?.[0]) || '';
+
+        console.log(`[TikTok LIVE Gift] 🎁 @${uid} (${nickname}) tặng: ${giftName} x${repeatCount}`);
+
+        this.ingest({
+          type: 'gift',
+          eventId: `tt-gift-${data.msgId || Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          data: {
+            giftId,
+            giftName,
+            repeatCount,
+            giftImageUrl,
+            viewer: {
+              id: String(data.userId || user.id || uid),
+              username: String(uid),
+              nickname: String(nickname),
+              avatarUrl: String(avatar)
+            }
+          }
+        }).catch((err) => console.error('[LiveProvider] Lỗi xử lý gift:', err.message));
+      });
+
+      this.liveConnection.on('like', (data) => {
+        const user = data.user || {};
+        const uid = data.uniqueId || user.displayId || user.uniqueId || user.id || '';
+        const nickname = data.nickname || user.nickname || uid;
+        const avatar = data.profilePictureUrl || '';
+        const likeCount = Number(data.likeCount || 1);
+
+        this.ingest({
+          type: 'like',
+          eventId: `tt-like-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          data: {
+            count: likeCount,
+            viewer: uid ? {
+              id: String(data.userId || user.id || uid),
+              username: String(uid),
+              nickname: String(nickname),
+              avatarUrl: String(avatar)
+            } : undefined
+          }
+        }).catch((err) => console.error('[LiveProvider] Lỗi xử lý like:', err.message));
+      });
+
+      this.liveConnection.on('member', (data) => {
+        const user = data.user || {};
+        const uid = data.uniqueId || user.displayId || user.uniqueId || user.id;
+        if (!uid) return;
+        const nickname = data.nickname || user.nickname || uid;
+        const avatar = data.profilePictureUrl || '';
+
+        this.ingest({
+          type: 'like',
+          eventId: `tt-join-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          data: {
+            count: 1,
+            viewer: {
+              id: String(data.userId || user.id || uid),
+              username: String(uid),
+              nickname: String(nickname),
+              avatarUrl: String(avatar)
+            }
+          }
+        }).catch(() => {});
+      });
+
+      this.liveConnection.on('disconnected', () => {
+        console.warn(`[TikTok LIVE] Mất kết nối phòng @${username}. Sẽ thử kết nối lại sau 15s...`);
+        this.status = 'disconnected';
+        this.onStatus?.(this.snapshot());
+        this.#scheduleReconnect(username);
+      });
+
+      this.liveConnection.on('streamEnd', () => {
+        console.warn(`[TikTok LIVE] Phiên phát sóng của @${username} đã kết thúc.`);
+        this.status = 'stream-ended';
+        this.onStatus?.(this.snapshot());
+        this.#scheduleReconnect(username);
+      });
+
+      const state = await this.liveConnection.connect();
+      this.status = 'connected';
+      this.roomId = state?.roomId || null;
+      console.log(`[TikTok LIVE] ✅ ĐÃ KẾT NỐI THÀNH CÔNG phòng LIVE @${username} (Room ID: ${this.roomId})`);
+      this.onStatus?.(this.snapshot());
+    } catch (err) {
+      console.warn(`[TikTok LIVE] Chưa kết nối được phòng @${username}: ${err.message}`);
+      this.status = 'disconnected';
+      this.onStatus?.(this.snapshot());
+      this.#scheduleReconnect(username);
+    }
+  }
+
+  #scheduleReconnect(username) {
+    if (this.reconnectTimer) clearTimeout(this.reconnectTimer);
+    this.reconnectTimer = setTimeout(() => {
+      if (this.status !== 'connected' && this.channel) {
+        console.log(`[TikTok LIVE] Đang thử kết nối lại @${username}...`);
+        this.#initDirectConnection(username).catch(() => {});
+      }
+    }, 15000);
+  }
+
   disconnect() {
+    if (this.reconnectTimer) {
+      clearTimeout(this.reconnectTimer);
+      this.reconnectTimer = null;
+    }
+    if (this.liveConnection) {
+      try { this.liveConnection.disconnect(); } catch {}
+      this.liveConnection = null;
+    }
     this.status = 'disconnected';
     this.onStatus?.(this.snapshot());
     return this.snapshot();
   }
 
   snapshot() {
-    return { name: this.name, status: this.status, channel: this.channel };
+    return {
+      name: this.name,
+      status: this.status,
+      channel: this.channel,
+      roomId: this.roomId
+    };
   }
 
   normalizeEvent(raw = {}) {

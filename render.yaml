@@ -9,7 +9,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: LIVE_PROVIDER_NAME
-        value: tiktok-webhook
+        value: tiktok-connector
       - key: TIKTOK_CHANNEL
         value: "@camsisi0"
       - key: LIVE_WEBHOOK_SECRET
