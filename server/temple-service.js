@@ -659,13 +659,13 @@ export class TempleService {
       state.settings.audio.revision += 1;
       const aiVoice = input.aiVoice || {};
       if (!state.settings.aiVoice) {
-        state.settings.aiVoice = { enabled: true, welcomeEnabled: true, giftThanksEnabled: true, volume: 0.9, rate: 0.92, preferredVoice: '' };
+        state.settings.aiVoice = { enabled: true, welcomeEnabled: true, giftThanksEnabled: true, volume: 0.9, rate: 1.25, preferredVoice: '' };
       }
       if (typeof aiVoice.enabled === 'boolean') state.settings.aiVoice.enabled = aiVoice.enabled;
       if (typeof aiVoice.welcomeEnabled === 'boolean') state.settings.aiVoice.welcomeEnabled = aiVoice.welcomeEnabled;
       if (typeof aiVoice.giftThanksEnabled === 'boolean') state.settings.aiVoice.giftThanksEnabled = aiVoice.giftThanksEnabled;
       if (aiVoice.volume !== undefined) state.settings.aiVoice.volume = clamp(aiVoice.volume, 0, 1);
-      if (aiVoice.rate !== undefined) state.settings.aiVoice.rate = clamp(aiVoice.rate, 0.5, 1.5);
+      if (aiVoice.rate !== undefined) state.settings.aiVoice.rate = clamp(aiVoice.rate, 0.5, 2.0);
       if (typeof aiVoice.preferredVoice === 'string') state.settings.aiVoice.preferredVoice = aiVoice.preferredVoice.trim().slice(0, 120);
 
       const liveProtection = input.liveProtection || {};

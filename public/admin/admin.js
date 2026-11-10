@@ -76,13 +76,13 @@ function renderSettings() {
   form.elements.loopList.checked = Boolean(audio.loopList);
   form.elements.repeatTrack.checked = Boolean(audio.repeatTrack);
 
-  const aiVoice = state.settings.aiVoice || { enabled: true, welcomeEnabled: true, giftThanksEnabled: true, volume: 0.9, rate: 0.92, preferredVoice: '' };
+  const aiVoice = state.settings.aiVoice || { enabled: true, welcomeEnabled: true, giftThanksEnabled: true, volume: 0.9, rate: 1.25, preferredVoice: '' };
   if (form.elements.aiVoiceEnabled) form.elements.aiVoiceEnabled.checked = aiVoice.enabled !== false;
   if (form.elements.aiWelcomeEnabled) form.elements.aiWelcomeEnabled.checked = aiVoice.welcomeEnabled !== false;
   if (form.elements.aiGiftThanksEnabled) form.elements.aiGiftThanksEnabled.checked = aiVoice.giftThanksEnabled !== false;
   if (form.elements.aiRate) {
-    form.elements.aiRate.value = aiVoice.rate || 0.92;
-    $('#ai-rate-output').textContent = `${aiVoice.rate || 0.92}x`;
+    form.elements.aiRate.value = aiVoice.rate || 1.25;
+    $('#ai-rate-output').textContent = `${aiVoice.rate || 1.25}x`;
   }
   if (form.elements.aiVolume) {
     form.elements.aiVolume.value = aiVoice.volume ?? 0.9;
@@ -347,7 +347,7 @@ $('#settings-form').addEventListener('submit', async (event) => {
       enabled: form.elements.aiVoiceEnabled?.checked ?? true,
       welcomeEnabled: form.elements.aiWelcomeEnabled?.checked ?? true,
       giftThanksEnabled: form.elements.aiGiftThanksEnabled?.checked ?? true,
-      rate: Number(formValue(form, 'aiRate') || 0.92),
+      rate: Number(formValue(form, 'aiRate') || 1.25),
       volume: Number(formValue(form, 'aiVolume') || 0.9),
       preferredVoice: form.elements.aiPreferredVoice?.value || ''
     },
@@ -381,6 +381,7 @@ function speakAdminPreview(text) {
   if (!clean) return;
   const pref = $('#ai-voice-select')?.value || '';
   const volume = Number($('#ai-volume-input')?.value || 0.9);
+  const rate = Number($('#ai-rate-input')?.value || 1.25);
 
   // Mặc định hoặc Google Cloud TTS: Phát qua Audio Stream (100% luôn có tiếng)
   if (!pref || pref === 'google_online') {
@@ -388,7 +389,12 @@ function speakAdminPreview(text) {
     adminAudioPreview.pause();
     adminAudioPreview.src = `/api/tts?text=${encodeURIComponent(clean)}`;
     adminAudioPreview.volume = Math.max(0, Math.min(1, volume));
-    adminAudioPreview.play().catch(e => console.warn('Preview audio blocked:', e));
+    adminAudioPreview.defaultPlaybackRate = rate;
+    adminAudioPreview.playbackRate = rate;
+    adminAudioPreview.onloadedmetadata = () => { try { adminAudioPreview.playbackRate = rate; } catch(_) {} };
+    adminAudioPreview.play().then(() => {
+      try { adminAudioPreview.playbackRate = rate; } catch(_) {}
+    }).catch(e => console.warn('Preview audio blocked:', e));
     return;
   }
 
@@ -398,7 +404,7 @@ function speakAdminPreview(text) {
       if (window.speechSynthesis.paused) window.speechSynthesis.resume();
       const u = new SpeechSynthesisUtterance(clean);
       u.lang = 'vi-VN';
-      u.rate = Number($('#ai-rate-input')?.value || 0.92);
+      u.rate = rate;
       u.volume = volume;
       const voices = window.speechSynthesis.getVoices() || [];
       const match = voices.find(v => v.name === pref);

@@ -280,7 +280,7 @@ class AiVoiceDirector {
       welcomeEnabled: true,
       giftThanksEnabled: true,
       volume: 0.9,
-      rate: 0.92,
+      rate: 1.25,
       preferredVoice: ''
     };
     this.bestVoice = null;
@@ -457,35 +457,45 @@ class AiVoiceDirector {
       this.audioPlayer.src = `/api/tts?text=${encodeURIComponent(text)}`;
       this.audioPlayer.volume = Math.max(0, Math.min(1, volume));
 
+      const playbackRate = Math.max(0.8, Math.min(2.0, Number(this.settings.rate || 1.25)));
+      this.audioPlayer.defaultPlaybackRate = playbackRate;
+      this.audioPlayer.playbackRate = playbackRate;
+
       let ended = false;
       const done = () => {
         if (!ended) {
           ended = true;
           this.audioPlayer.onended = null;
           this.audioPlayer.onerror = null;
+          this.audioPlayer.onloadedmetadata = null;
           onFinish();
         }
       };
 
+      this.audioPlayer.onloadedmetadata = () => {
+        try { this.audioPlayer.playbackRate = playbackRate; } catch (_) {}
+      };
       this.audioPlayer.onended = done;
       this.audioPlayer.onerror = (e) => {
         console.warn('Audio stream error, fallback timer active:', e);
-        const estDuration = Math.max(3500, text.length * 85);
+        const estDuration = Math.max(2000, Math.round((text.length * 60) / playbackRate));
         setTimeout(done, estDuration);
       };
 
       const playPromise = this.audioPlayer.play();
       if (playPromise !== undefined) {
-        playPromise.catch((err) => {
+        playPromise.then(() => {
+          try { this.audioPlayer.playbackRate = playbackRate; } catch (_) {}
+        }).catch((err) => {
           console.warn('Audio play blocked by browser policy:', err);
           $('#sound-prompt')?.style.setProperty('display', 'block');
-          const estDuration = Math.max(3500, text.length * 85);
+          const estDuration = Math.max(2000, Math.round((text.length * 60) / playbackRate));
           setTimeout(done, estDuration);
         });
       }
     } catch (err) {
       console.warn('playAudioStream error:', err);
-      setTimeout(onFinish, 3500);
+      setTimeout(onFinish, 2500);
     }
   }
 
@@ -508,7 +518,7 @@ class AiVoiceDirector {
       const utterance = new SpeechSynthesisUtterance(text);
       utterance.voice = voice;
       utterance.lang = voice.lang || 'vi-VN';
-      utterance.rate = Number(this.settings.rate || 0.92);
+      utterance.rate = Math.max(0.8, Math.min(2.0, Number(this.settings.rate || 1.25)));
       utterance.volume = volume;
       utterance.pitch = 1.0;
 

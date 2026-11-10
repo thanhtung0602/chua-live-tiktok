@@ -68,7 +68,7 @@ export const defaultState = () => ({
       welcomeEnabled: true,
       giftThanksEnabled: true,
       volume: 0.9,
-      rate: 0.92,
+      rate: 1.25,
       preferredVoice: ''
     },
     liveProtection: {
