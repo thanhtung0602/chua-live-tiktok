@@ -1,0 +1,301 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#180e1d" />
+    <title>Chùa</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/game/game.css" />
+  </head>
+  <body>
+    <main id="broadcast" aria-label="Chùa Online livestream">
+      <div class="broadcast-ambient-backdrop" aria-hidden="true"></div>
+
+      <div id="broadcast-frame">
+        <div id="game" aria-label="Chính điện Chùa An Lạc"></div>
+
+        <header class="broadcast-header">
+          <div class="temple-mark" aria-hidden="true">☸</div>
+          <div>
+            <h1>Chính Điện</h1>
+            <div class="live-pill is-live" id="live-status" title="Phát trực tiếp thời gian thực">
+              <i></i>
+              <span>LIVE</span>
+              <span class="live-clock" id="live-clock">12:00:00</span>
+            </div>
+          </div>
+        </header>
+        <!-- Bảng xếp hạng người chơi tặng quà nhiều nhất (Tấm Lòng Thành) -->
+        <aside
+          class="donor-board"
+          id="donor-board"
+          aria-label="Bảng vàng cúng dường"
+        >
+          <div class="panel-header">
+            <span class="panel-icon">👑</span>
+            <div class="panel-title-wrap">
+              <span class="panel-kicker">CÔNG ĐỨC</span>
+            </div>
+            <button
+              type="button"
+              class="panel-toggle"
+              id="toggle-donor-board"
+              title="Thu gọn / Mở rộng"
+              aria-label="Thu gọn"
+            >
+              ▾
+            </button>
+          </div>
+          <div class="panel-body" id="donor-body">
+            <ol class="donor-list" id="donor-list">
+              <li class="donor-empty">Chưa có pháp duyên cúng dường</li>
+            </ol>
+            <p class="donor-footer">✦ Công đức vô lượng ✦</p>
+          </div>
+        </aside>
+
+        <!-- Thanh Mốc Tim Thỉnh Đại Hồng Chung Ở Vị Trí Trung Tâm Phía Trên (To rõ, chính giữa) -->
+        <aside
+          class="bell-milestone-widget"
+          id="bell-widget"
+          aria-label="Thả tim thỉnh đại hồng chung"
+        >
+          <div class="milestone-header">
+            <span class="milestone-title">🔔 Thả tim thỉnh chuông</span>
+            <span class="bell-count-text"
+              ><strong id="bell-progress-count">0</strong> / 1.000
+              <span class="heart-pulse">♥</span></span
+            >
+          </div>
+          <div class="bell-progress-track">
+            <div
+              class="bell-progress-fill"
+              id="bell-progress-fill"
+              style="width: 0%"
+            ></div>
+          </div>
+        </aside>
+
+        <!-- Widget Nghi Lễ Bên Phải: Lễ Hồi Hướng Sau (10 phút) -->
+        <div class="right-ritual-panel" id="right-ritual-panel">
+          <aside
+            class="ritual-card ceremony-card"
+            id="ceremony-widget"
+            aria-label="Lễ hồi hướng"
+          >
+            <div class="ritual-header">
+              <span class="ritual-icon">🙏</span>
+              <span class="ritual-title">Lễ hồi hướng sau</span>
+            </div>
+            <div class="ritual-row">
+              <strong class="ceremony-timer" id="ceremony-countdown"
+                >10:00</strong
+              >
+              <span class="ceremony-attendees"
+                ><b id="ceremony-attendees">0</b> Phật tử</span
+              >
+            </div>
+          </aside>
+        </div>
+
+        <!-- Bảng hướng dẫn ý nghĩa tặng quà chuẩn phong cách TikTok LIVE -->
+        <aside class="gift-guide" id="gift-guide" aria-label="Quà phát nguyện">
+          <div class="guide-header">
+            <span class="guide-title-text">☸ QUÀ PHÁT NGUYỆN</span>
+            <button
+              type="button"
+              class="panel-toggle"
+              id="toggle-gift-guide"
+              title="Thu gọn / Mở rộng"
+              aria-label="Thu gọn"
+            >
+              ▾
+            </button>
+          </div>
+          <div class="panel-body guide-cards" id="guide-body">
+            <div class="guide-card card-rose">
+              <div class="card-icon">🌹</div>
+              <div class="card-text">
+                <strong class="card-title">Cầu duyên</strong>
+                <span class="card-sub">Hoa hồng</span>
+              </div>
+            </div>
+            <div class="guide-card card-purple">
+              <div class="card-icon">🎵</div>
+              <div class="card-text">
+                <strong class="card-title">Cầu bình an</strong>
+                <span class="card-sub">Bó hoa</span>
+              </div>
+            </div>
+            <div class="guide-card card-teal">
+              <div class="card-icon">🍦</div>
+              <div class="card-text">
+                <strong class="card-title">Cầu sức khỏe</strong>
+                <span class="card-sub">Bó hoa mùa xuân</span>
+              </div>
+            </div>
+            <div class="guide-card card-amber">
+              <div class="card-icon">🥰</div>
+              <div class="card-text">
+                <strong class="card-title">Cầu may mắn</strong>
+                <span class="card-sub">Yêu bạn</span>
+              </div>
+            </div>
+            <div class="guide-card card-ruby">
+              <div class="card-icon">🫰</div>
+              <div class="card-text">
+                <strong class="card-title">Cầu tình duyên</strong>
+                <span class="card-sub">Bắn tim</span>
+              </div>
+            </div>
+            <div class="guide-card card-green">
+              <div class="card-icon">🍀</div>
+              <div class="card-text">
+                <strong class="card-title">Gieo quẻ may mắn</strong>
+                <span class="card-sub">Cỏ bốn lá 10xu</span>
+              </div>
+            </div>
+            <div class="guide-card card-gold">
+              <div class="card-icon">👍</div>
+              <div class="card-text">
+                <strong class="card-title">Chúc an lành</strong>
+                <span class="card-sub">Rất tốt</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        <!-- Khung phụ đề Lời nói AI (Chào mừng Phật tử & Tri ân quà tặng) -->
+        <section
+          class="ai-speech-bubble"
+          id="ai-speech-bubble"
+          aria-live="polite"
+          aria-hidden="true"
+        >
+          <div class="speech-header">
+            <span class="speech-icon" id="speech-icon">🎙️</span>
+            <span class="speech-kicker" id="speech-kicker">LỜI CHÙA</span>
+          </div>
+          <p class="speech-content" id="speech-content">
+            A Di Đà Phật, chào mừng thiện hữu đã ghé thăm chùa.
+          </p>
+        </section>
+
+        <section
+          class="gift-card"
+          id="gift-card"
+          aria-live="polite"
+          aria-hidden="true"
+        >
+          <div class="gift-aura"></div>
+          <div class="avatar-frame">
+            <img id="gift-avatar" alt="" />
+            <span id="gift-initials">🙏</span>
+          </div>
+          <div class="gift-copy">
+            <p class="gift-kicker">PHÁP DUYÊN CÚNG DƯỜNG</p>
+            <h2 id="gift-nickname">Thiện hữu</h2>
+            <p id="gift-username">@thienhuu</p>
+            <p class="gift-thanks" id="gift-thanks"></p>
+          </div>
+          <div class="gift-token">
+            <img id="gift-image" alt="" />
+            <span id="gift-symbol">✦</span>
+            <strong id="gift-name">Quà tặng</strong>
+          </div>
+        </section>
+
+        <!-- Banner Chúc mừng Mốc 1.000 Tim Thỉnh Đại Hồng Chung -->
+        <section
+          class="bell-milestone-banner"
+          id="bell-milestone-banner"
+          aria-hidden="true"
+        >
+          <span class="bell-banner-icon">🔔</span>
+          <div class="bell-banner-text">
+            <strong class="bell-banner-title">ĐẠI HỒNG CHUNG NGÂN VANG</strong>
+            <span class="bell-banner-sub" id="bell-milestone-sub"
+              >Hoàn thành mốc 1.000 lượt tim công đức</span
+            >
+          </div>
+        </section>
+
+        <!-- Thẻ Quẻ Xăm Linh Ứng (Khi người xem bình luận 'gieo quẻ') -->
+        <section
+          class="fortune-card-overlay"
+          id="fortune-card-overlay"
+          aria-hidden="true"
+        >
+          <div class="fortune-card" id="fortune-card">
+            <div class="fortune-aura"></div>
+            <div class="fortune-header">
+              <span class="fortune-stick-icon">🎋</span>
+              <div class="fortune-header-text">
+                <span class="fortune-kicker">QUẺ XĂM QUÁN ÂM · LINH TÂM CẦU PHÁP</span>
+                <h3 class="fortune-number-title" id="fortune-number-title">QUẺ SỐ 01 · THƯỢNG THƯỢNG</h3>
+              </div>
+              <button type="button" class="fortune-close-btn" id="fortune-close-btn" title="Đóng">✕</button>
+            </div>
+            <div class="fortune-recipient">
+              <span class="recipient-label">Người xin quẻ:</span>
+              <strong class="recipient-name" id="fortune-recipient-name">@ThanhTung</strong>
+            </div>
+            <div class="fortune-poem-box">
+              <p class="fortune-poem" id="fortune-poem">
+                Hoa khai phú quý mãn đình tiền<br />
+                Thiện niệm từ bi kết mối duyên<br />
+                Phật tổ từ bi hằng che chở<br />
+                Thân tâm an lạc hưởng bình yên
+              </p>
+            </div>
+            <div class="fortune-meaning-box">
+              <p class="fortune-meaning" id="fortune-meaning">
+                <strong>Giải nghĩa:</strong> Vạn sự hanh thông, công việc thuận buồm xuôi gió, phúc lộc đủ đầy.
+              </p>
+              <p class="fortune-advice" id="fortune-advice">
+                <strong>Lời Phật dạy:</strong> Năng làm việc thiện để phúc đức mãi dài lâu.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <!-- Màn Vinh Danh Đại Lễ Hồi Hướng Mỗi 10 Phút -->
+        <section
+          class="ceremony-overlay"
+          id="ceremony-overlay"
+          aria-hidden="true"
+        >
+          <div class="ceremony-halo"></div>
+          <div class="ceremony-lotus-field" id="ceremony-lotus-field" aria-hidden="true"></div>
+          <div class="ceremony-content">
+            <div class="ceremony-kicker">CHÍ TÂM ĐẢNH LỄ TAM BẢO</div>
+            <h2 class="ceremony-title">ĐẠI LỄ HỒI HƯỚNG CÔNG ĐỨC</h2>
+            <p class="ceremony-chant">
+              Nguyện đem công đức này · Hướng về khắp tất cả<br />
+              Đệ tử và chúng sinh · Đều trọn thành Phật đạo
+            </p>
+          </div>
+        </section>
+
+        <div class="sound-prompt" id="sound-prompt" hidden>
+          <button type="button" id="enable-sound">🔊 Bật âm thanh</button>
+          <span>OBS/Chromium có thể yêu cầu kích hoạt âm thanh một lần.</span>
+        </div>
+
+        <p class="footer-blessing">
+          Nguyện cho mọi người thân tâm an lạc · Nam mô A Di Đà Phật
+        </p>
+      </div>
+    </main>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/vendor/phaser.min.js"></script>
+    <script type="module" src="/game/app.js"></script>
+  </body>
+</html>

@@ -1,0 +1,1335 @@
+:root {
+  color-scheme: dark;
+  --cream: #fff8e1;
+  --gold: #f9cb65;
+  --soft-gold: #ffdf94;
+  --plum: #1c0c1e;
+  --wine: #56182c;
+}
+
+* { box-sizing: border-box; }
+html, body {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #0d0711;
+  font-family: 'Be Vietnam Pro', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+#broadcast {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  background: #08030b;
+}
+
+/* Nền mờ sang trọng tự động lấp đầy khoảng đen 2 bên trên màn hình PC rộng */
+.broadcast-ambient-backdrop {
+  position: absolute;
+  inset: -40px;
+  background: url('/assets/temple_bg.jpg') center/cover no-repeat;
+  filter: blur(45px) brightness(0.22);
+  opacity: 0.88;
+  z-index: 1;
+  pointer-events: none;
+}
+
+/* Khung chuẩn tỷ lệ dọc 9:16 của TikTok LIVE / OBS Browser Source */
+#broadcast-frame {
+  position: relative;
+  z-index: 2;
+  height: 100vh;
+  aspect-ratio: 9 / 16;
+  max-width: calc(100vh * 9 / 16);
+  width: auto;
+  overflow: hidden;
+  background: #0d0711;
+  box-shadow: 0 0 60px rgba(0, 0, 0, 0.92), 0 0 0 1px rgba(246, 203, 101, 0.22);
+  container-type: inline-size;
+  container-name: stage;
+}
+
+@media (max-aspect-ratio: 9/16) {
+  #broadcast-frame {
+    width: 100vw;
+    height: 100vh;
+    max-width: 100vw;
+  }
+}
+
+#game {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Đảm bảo canvas 9:16 co giãn chuẩn, sắc nét không bị vỡ/mờ khi hiển thị trên OBS và điện thoại */
+#game canvas {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+.broadcast-header {
+  position: absolute;
+  z-index: 5;
+  top: clamp(10px, 1.4vh, 20px);
+  left: clamp(8px, 2cqw, 16px);
+  display: flex;
+  align-items: center;
+  gap: clamp(6px, 1.2cqw, 10px);
+  color: var(--cream);
+  pointer-events: none;
+  text-shadow: 0 2px 14px rgba(10, 3, 10, 0.85);
+}
+
+.temple-mark {
+  display: grid;
+  width: clamp(32px, 4.2vh, 46px);
+  height: clamp(32px, 4.2vh, 46px);
+  place-items: center;
+  border: 1.5px solid rgba(247, 201, 103, 0.8);
+  border-radius: 50%;
+  color: var(--gold);
+  background: rgba(45, 16, 38, 0.78);
+  font-size: clamp(16px, 2.2vh, 24px);
+  box-shadow: inset 0 0 16px rgba(246, 187, 76, 0.3), 0 4px 18px rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  flex-shrink: 0;
+}
+
+.eyebrow {
+  margin: 0 0 2px;
+  color: rgba(255, 223, 148, 0.85);
+  font-size: clamp(8px, 1.1vh, 10px);
+  font-weight: 800;
+  letter-spacing: .16em;
+}
+
+.broadcast-header h1 {
+  margin: 0;
+  font-family: 'Be Vietnam Pro', 'Segoe UI', sans-serif;
+  font-size: clamp(14px, 2vh, 20px);
+  font-weight: 700;
+  letter-spacing: .02em;
+  color: #fff9e6;
+  white-space: nowrap;
+}
+
+.live-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  margin-top: 2px;
+  border: 0.8px solid rgba(255, 255, 255, 0.22);
+  border-radius: 999px;
+  background: rgba(18, 10, 24, 0.78);
+  color: #f9e9c1;
+  font-size: clamp(8px, 1.1vh, 11px);
+  font-weight: 800;
+  letter-spacing: .06em;
+  backdrop-filter: blur(4px);
+  white-space: nowrap;
+}
+
+.live-pill i {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: #9d8a89;
+  box-shadow: 0 0 0 2px rgba(157, 138, 137, 0.25);
+}
+
+.live-pill.is-live i {
+  background: #f35b62;
+  box-shadow: 0 0 0 2px rgba(243, 91, 98, 0.3), 0 0 8px #f35b62;
+}
+
+.live-pill.is-simulated i {
+  background: #f8c865;
+  box-shadow: 0 0 0 2px rgba(248, 200, 101, 0.3), 0 0 8px #f8c865;
+}
+
+.live-clock {
+  font-family: 'SF Mono', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: clamp(8px, 1.1vh, 11px);
+  font-weight: 700;
+  color: #ffebaa;
+  letter-spacing: .02em;
+  margin-left: 2px;
+  padding-left: 4px;
+  border-left: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.live-stats {
+  position: absolute;
+  z-index: 5;
+  top: clamp(16px, 2.4vh, 26px);
+  right: clamp(12px, 2.2vw, 18px);
+  display: flex;
+  gap: 6px;
+  pointer-events: none;
+}
+
+.live-stats div {
+  min-width: clamp(48px, 6vh, 62px);
+  padding: 4px 6px;
+  border: 1px solid rgba(249, 212, 124, 0.35);
+  border-radius: 8px;
+  background: linear-gradient(135deg, rgba(52, 19, 45, 0.85), rgba(18, 13, 24, 0.88));
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(5px);
+  text-align: center;
+}
+
+.live-stats b {
+  color: #fff1c7;
+  font-family: 'Be Vietnam Pro', 'Segoe UI', sans-serif;
+  font-size: clamp(13px, 1.8vh, 17px);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.live-stats small {
+  display: block;
+  margin-top: 1px;
+  color: rgba(233, 201, 144, 0.85);
+  font-size: 8px;
+}
+
+.stat-icon {
+  margin-right: 3px;
+  color: #f8bf63;
+  font-size: clamp(10px, 1.3vw, 13px);
+}
+
+/* ========================================================
+   KHUNG PHỤ ĐỀ LỜI NÓI AI (CHÀO MỪNG & TRI ÂN CÔNG ĐỨC)
+======================================================== */
+.ai-speech-bubble {
+  position: absolute;
+  z-index: 9;
+  left: 50%;
+  bottom: clamp(68px, 9vh, 112px);
+  transform: translate(-50%, 14px) scale(0.96);
+  width: calc(100% - 32px);
+  max-width: 380px;
+  padding: 8px 14px;
+  border: 1.2px solid rgba(246, 203, 101, 0.6);
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(24, 10, 22, 0.94), rgba(38, 14, 30, 0.92));
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.75), inset 0 0 14px rgba(246, 187, 76, 0.15);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  color: #fff6db;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .32s ease, transform .36s cubic-bezier(.2,.85,.22,1.2), border-color .3s ease;
+  user-select: none;
+}
+
+.ai-speech-bubble.is-speaking {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+  pointer-events: auto;
+}
+
+.ai-speech-bubble.mode-gift {
+  border-color: rgba(255, 215, 0, 0.85);
+  box-shadow: 0 8px 30px rgba(255, 170, 0, 0.3), inset 0 0 18px rgba(255, 215, 0, 0.22);
+}
+
+.ai-speech-bubble.mode-fortune {
+  border-color: rgba(192, 132, 252, 0.9);
+  box-shadow: 0 8px 30px rgba(168, 85, 247, 0.35), inset 0 0 18px rgba(192, 132, 252, 0.22);
+}
+
+.speech-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  margin-bottom: 3px;
+}
+
+.speech-icon {
+  font-size: 13px;
+  line-height: 1;
+}
+
+.speech-kicker {
+  font-size: 8px;
+  font-weight: 800;
+  color: #f7ca68;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+
+.speech-content {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: clamp(10.5px, 1.3vh, 12.5px);
+  line-height: 1.42;
+  color: #ffffff;
+  text-align: center;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.9);
+}
+
+/* Bảng vinh danh quà tặng đặt ở vị trí an toàn trên màn hình TikTok (trên khu vực comment) */
+.gift-card {
+  position: absolute;
+  z-index: 8;
+  left: 50%;
+  bottom: clamp(140px, 16vh, 220px);
+  display: grid;
+  grid-template-columns: auto minmax(110px, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  width: calc(100% - 28px);
+  max-width: 420px;
+  min-height: 96px;
+  padding: 12px 14px;
+  overflow: hidden;
+  border: 1.5px solid rgba(255, 224, 161, 0.75);
+  border-radius: 18px;
+  background: linear-gradient(115deg, rgba(48, 18, 38, 0.94), rgba(103, 35, 59, 0.92) 50%, rgba(48, 18, 38, 0.94));
+  box-shadow: 0 14px 44px rgba(8, 3, 11, 0.8), inset 0 0 26px rgba(255, 199, 90, 0.2);
+  color: #fff4d7;
+  opacity: 0;
+  transform: translate(-50%, 28px) scale(.95);
+  transition: opacity .35s ease, transform .42s cubic-bezier(.2,.85,.22,1.2);
+  pointer-events: none;
+  backdrop-filter: blur(8px);
+}
+
+.gift-card.is-visible {
+  opacity: 1;
+  transform: translate(-50%, 0) scale(1);
+}
+
+.gift-aura {
+  position: absolute;
+  inset: -60%;
+  z-index: -1;
+  background: conic-gradient(from 180deg, transparent, rgba(255, 209, 91, 0.22), transparent, rgba(255, 221, 124, 0.16), transparent);
+  animation: orbit 6s linear infinite;
+}
+
+@keyframes orbit {
+  to { transform: rotate(360deg); }
+}
+
+.avatar-frame {
+  position: relative;
+  display: grid;
+  width: clamp(58px, 6.5vw, 76px);
+  height: clamp(58px, 6.5vw, 76px);
+  place-items: center;
+  overflow: hidden;
+  border: 2.5px solid #ffdc8d;
+  border-radius: 50%;
+  background: radial-gradient(circle at 33% 25%, #ffe9b0, #b36b55 42%, #50263b);
+  box-shadow: 0 0 0 4px rgba(255, 210, 114, 0.25), 0 0 22px rgba(247, 186, 86, 0.5);
+}
+
+.avatar-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.avatar-frame img:not([src]), .avatar-frame img.is-broken {
+  display: none;
+}
+
+#gift-initials {
+  color: #fff3cf;
+  font-family: 'Be Vietnam Pro', 'Segoe UI', sans-serif;
+  font-size: clamp(22px, 3vw, 32px);
+  font-weight: 700;
+}
+
+.gift-kicker {
+  margin: 0 0 3px;
+  color: rgba(255, 217, 140, 0.85);
+  font-size: clamp(8px, 1.1vw, 10px);
+  font-weight: 800;
+  letter-spacing: .15em;
+}
+
+.gift-copy h2 {
+  max-width: 250px;
+  margin: 0;
+  overflow: hidden;
+  color: #fff6da;
+  font-size: clamp(16px, 2vw, 22px);
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.gift-copy > p:not(.gift-kicker) {
+  margin: 2px 0;
+  color: rgba(255, 229, 180, 0.8);
+  font-size: clamp(10px, 1.2vw, 13px);
+}
+
+.gift-copy .gift-thanks {
+  margin-top: 5px;
+  color: #fff8e3;
+  font-family: 'Be Vietnam Pro', 'Segoe UI', sans-serif;
+  font-size: clamp(11px, 1.4vw, 15px);
+  line-height: 1.3;
+}
+
+.gift-token {
+  display: grid;
+  width: clamp(55px, 6vw, 80px);
+  justify-items: center;
+  color: #ffe8aa;
+  text-align: center;
+}
+
+.gift-token img {
+  display: none;
+  width: 44px;
+  height: 44px;
+  object-fit: contain;
+  filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.55));
+}
+
+.gift-token img.has-image {
+  display: block;
+}
+
+.gift-token img.has-image + #gift-symbol {
+  display: none;
+}
+
+#gift-symbol {
+  color: #ffcb64;
+  font-size: clamp(34px, 4vw, 48px);
+  line-height: .9;
+  text-shadow: 0 0 16px rgba(255, 194, 76, 0.7);
+}
+
+.gift-token strong {
+  margin-top: 5px;
+  font-size: clamp(9px, 1.1vw, 12px);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.sound-prompt {
+  position: absolute;
+  z-index: 10;
+  right: 14px;
+  bottom: clamp(18px, 2.5vh, 32px);
+  max-width: 240px;
+  color: rgba(255, 238, 201, 0.85);
+  font-size: 10px;
+  text-align: right;
+}
+
+.sound-prompt button {
+  display: block;
+  margin: 0 0 4px auto;
+  padding: 7px 11px;
+  border: 1.5px solid rgba(255, 224, 162, 0.6);
+  border-radius: 8px;
+  background: rgba(106, 41, 62, 0.92);
+  color: #fff1cf;
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.footer-blessing {
+  position: absolute;
+  z-index: 5;
+  left: 50%;
+  bottom: clamp(10px, 1.4vh, 16px);
+  width: max-content;
+  max-width: calc(100% - 24px);
+  margin: 0;
+  transform: translateX(-50%);
+  color: rgba(248, 223, 171, 0.75);
+  font-family: 'Be Vietnam Pro', 'Segoe UI', sans-serif;
+  font-size: clamp(9px, 1.1vh, 11px);
+  font-style: italic;
+  text-align: center;
+  text-shadow: 0 1px 6px rgba(18, 6, 18, 0.9);
+  pointer-events: none;
+  white-space: nowrap;
+}
+
+/* ========================================================
+   BẢNG VÀNG CÚNG DƯỜNG (TẤM LÒNG THÀNH)
+   Kích thước lớn hơn, rõ nét chuẩn TikTok LIVE & OBS Studio
+======================================================== */
+.donor-board {
+  position: absolute;
+  z-index: 6;
+  top: clamp(56px, 7vh, 84px);
+  left: clamp(8px, 2cqw, 16px);
+  width: clamp(140px, 33cqw, 320px);
+  border: 1px solid rgba(246, 203, 101, 0.5);
+  border-radius: clamp(9px, 2cqw, 14px);
+  background: linear-gradient(135deg, rgba(38, 14, 30, 0.88), rgba(18, 10, 22, 0.92));
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.65), inset 0 0 12px rgba(246, 187, 76, 0.15);
+  backdrop-filter: blur(8px);
+  color: #fff9e6;
+  transition: all .25s ease;
+  user-select: none;
+}
+
+/* ========================================================
+   THANH MỐC TIM THỈNH ĐẠI HỒNG CHUNG (MỐC 1.000 TIM)
+   Nổi bật ở giữa trên cùng, to rõ và trang nghiêm
+======================================================== */
+.bell-milestone-widget {
+  position: absolute;
+  z-index: 7;
+  top: clamp(8px, 1.2vh, 18px);
+  left: 50%;
+  transform: translateX(-50%);
+  width: clamp(160px, 40cqw, 360px);
+  padding: clamp(4px, 0.6vh, 8px) clamp(8px, 2cqw, 16px);
+  border: 1px solid rgba(246, 203, 101, 0.65);
+  border-radius: clamp(12px, 2.8cqw, 18px);
+  background: linear-gradient(135deg, rgba(38, 14, 30, 0.94), rgba(18, 10, 22, 0.97));
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.7), 0 0 12px rgba(255, 215, 0, 0.22), inset 0 0 8px rgba(246, 187, 76, 0.15);
+  backdrop-filter: blur(8px);
+  color: #fff9e6;
+  user-select: none;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.milestone-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: clamp(4px, 1cqw, 8px);
+}
+
+.milestone-title {
+  font-family: 'Be Vietnam Pro', 'Segoe UI', -apple-system, sans-serif;
+  font-size: clamp(10.5px, 2.5cqw, 15px);
+  font-weight: 700;
+  color: #ffebaa;
+  letter-spacing: .01em;
+  white-space: nowrap;
+}
+
+.bell-count-text {
+  font-family: 'Be Vietnam Pro', 'Segoe UI', sans-serif;
+  font-size: clamp(10.5px, 2.5cqw, 15px);
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: .01em;
+  white-space: nowrap;
+}
+
+.bell-count-text strong {
+  color: #ffd700;
+  font-size: clamp(12px, 2.9cqw, 18px);
+}
+
+.heart-pulse {
+  color: #ff2a5f;
+  display: inline-block;
+  margin-left: 2px;
+  animation: heartBeat 1.2s ease infinite;
+}
+
+@keyframes heartBeat {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+}
+
+.bell-progress-track {
+  height: clamp(5px, 0.7vh, 8px);
+  width: 100%;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.15);
+  overflow: hidden;
+  margin: clamp(3px, 0.4vh, 6px) 0 clamp(1px, 0.2vh, 3px);
+  border: 0.6px solid rgba(255, 215, 0, 0.3);
+}
+
+.bell-progress-fill {
+  height: 100%;
+  width: 0%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #ff2a5f, #fb7185 50%, #ffd700 100%);
+  transition: width 0.35s ease-out;
+  box-shadow: 0 0 8px rgba(255, 42, 95, 0.7);
+}
+
+/* ========================================================
+   LỄ HỒI HƯỚNG CÔNG ĐỨC (BÊN PHẢI TRÊN)
+   Đối xứng cân đối với Bảng Công Đức bên trái
+======================================================== */
+.right-ritual-panel {
+  position: absolute;
+  z-index: 6;
+  top: clamp(56px, 7vh, 84px);
+  right: clamp(8px, 2cqw, 16px);
+  width: clamp(140px, 33cqw, 320px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(3px, 0.5vh, 6px);
+  user-select: none;
+}
+
+.ritual-card {
+  border: 1px solid rgba(246, 203, 101, 0.5);
+  border-radius: clamp(9px, 2cqw, 14px);
+  background: linear-gradient(135deg, rgba(38, 14, 30, 0.88), rgba(18, 10, 22, 0.92));
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6), inset 0 0 10px rgba(246, 187, 76, 0.14);
+  backdrop-filter: blur(8px);
+  padding: clamp(5px, 0.7vh, 10px) clamp(8px, 1.8cqw, 14px);
+  color: #fff9e6;
+  transition: transform .2s ease, box-shadow .2s ease;
+}
+
+.ritual-header {
+  display: flex;
+  align-items: center;
+  gap: clamp(4px, 1cqw, 7px);
+  margin-bottom: clamp(2px, 0.3vh, 4px);
+}
+
+.ritual-icon {
+  font-size: clamp(12px, 2.8cqw, 18px);
+  line-height: 1;
+}
+
+.ritual-title {
+  font-family: 'Be Vietnam Pro', 'Segoe UI', -apple-system, Roboto, sans-serif;
+  font-size: clamp(10px, 2.4cqw, 15px);
+  font-weight: 700;
+  color: #ffebaa;
+  letter-spacing: 0;
+  white-space: nowrap;
+}
+
+.ritual-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 4px;
+}
+
+.ceremony-timer {
+  font-family: 'Courier New', monospace;
+  font-size: clamp(15px, 3.8cqw, 24px);
+  font-weight: 800;
+  color: #ffd700;
+  letter-spacing: .05em;
+  text-shadow: 0 0 8px rgba(255, 215, 0, 0.65);
+  line-height: 1;
+}
+
+.ceremony-attendees {
+  font-family: 'Be Vietnam Pro', 'Segoe UI', -apple-system, Roboto, sans-serif;
+  font-size: clamp(9.5px, 2.2cqw, 14px);
+  color: rgba(255, 235, 195, 0.9);
+  font-weight: 500;
+}
+
+.ceremony-attendees b {
+  color: #ffd700;
+  font-weight: 700;
+  font-size: clamp(10.5px, 2.5cqw, 15px);
+}
+
+/* ========================================================
+   QUÀ PHÁT NGUYỆN (BÊN PHẢI DƯỚI LỄ HỒI HƯỚNG)
+   Thiết kế thẻ màu lớn hơn, chữ rõ ràng, sang trọng
+======================================================== */
+.gift-guide {
+  position: absolute;
+  z-index: 6;
+  top: clamp(118px, 14.5vh, 172px);
+  right: clamp(8px, 2cqw, 16px);
+  width: clamp(140px, 33cqw, 320px);
+  display: flex;
+  flex-direction: column;
+  gap: clamp(3px, 0.45vh, 5px);
+  color: #fff9e6;
+  transition: all .25s ease;
+  user-select: none;
+}
+
+.gift-guide .panel-body {
+  padding: 0;
+}
+
+.panel-header {
+  display: flex;
+  align-items: center;
+  gap: clamp(6px, 1.2cqw, 10px);
+  padding: clamp(5px, 0.7vh, 9px) clamp(8px, 1.8cqw, 14px);
+  border-bottom: 1px solid rgba(246, 203, 101, 0.22);
+  background: rgba(246, 203, 101, 0.08);
+}
+
+.panel-icon {
+  font-size: clamp(13px, 3cqw, 19px);
+  line-height: 1;
+}
+
+.panel-title-wrap {
+  flex: 1;
+  min-width: 0;
+}
+
+.panel-kicker {
+  display: block;
+  font-size: clamp(9.5px, 2.4cqw, 14px);
+  font-weight: 800;
+  color: #f7ca68;
+  letter-spacing: .12em;
+  line-height: 1;
+}
+
+.panel-title {
+  margin: 1px 0 0;
+  font-family: 'Be Vietnam Pro', 'Segoe UI', -apple-system, Roboto, sans-serif;
+  font-size: clamp(11px, 2.6cqw, 15px);
+  font-weight: 700;
+  color: #fff6db;
+  letter-spacing: .02em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.panel-toggle {
+  background: none;
+  border: none;
+  color: rgba(246, 203, 101, 0.85);
+  font-size: clamp(12px, 2.8cqw, 17px);
+  cursor: pointer;
+  padding: 2px 5px;
+  line-height: 1;
+  border-radius: 4px;
+  transition: transform .2s ease;
+}
+
+.panel-toggle:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.panel-collapsed .panel-body {
+  display: none !important;
+}
+
+.panel-collapsed .panel-toggle {
+  transform: rotate(-90deg);
+}
+
+.panel-body {
+  padding: clamp(5px, 0.7vh, 9px) clamp(6px, 1.4cqw, 10px);
+}
+
+/* Danh sách người tặng quà */
+.donor-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(3px, 0.45vh, 6px);
+}
+
+.donor-item {
+  display: flex;
+  align-items: center;
+  gap: clamp(5px, 1.2cqw, 8px);
+  padding: clamp(3.5px, 0.5vh, 6px) clamp(5px, 1.2cqw, 8px);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  font-size: clamp(10.5px, 2.5cqw, 14.5px);
+}
+
+.donor-rank {
+  display: grid;
+  place-items: center;
+  width: clamp(18px, 4.2cqw, 24px);
+  height: clamp(18px, 4.2cqw, 24px);
+  border-radius: 50%;
+  font-size: clamp(9px, 2.2cqw, 13px);
+  font-weight: 800;
+  flex-shrink: 0;
+}
+
+.donor-rank.rank-1 {
+  background: linear-gradient(135deg, #ffd700, #ffaa00);
+  color: #3d1c00;
+  box-shadow: 0 0 6px rgba(255, 215, 0, 0.6);
+}
+
+.donor-rank.rank-2 {
+  background: linear-gradient(135deg, #e0e0e0, #a0a0a0);
+  color: #222;
+}
+
+.donor-rank.rank-3 {
+  background: linear-gradient(135deg, #cd7f32, #8b4513);
+  color: #fff;
+}
+
+.donor-rank.rank-other {
+  background: rgba(255, 255, 255, 0.1);
+  color: #d8c2aa;
+}
+
+.donor-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 600;
+  color: #fff3d4;
+  font-family: 'Be Vietnam Pro', 'Segoe UI', -apple-system, sans-serif;
+  font-size: clamp(10.5px, 2.5cqw, 14.5px);
+}
+
+.donor-score {
+  font-weight: 700;
+  font-family: 'Be Vietnam Pro', 'Segoe UI', -apple-system, sans-serif;
+  color: #f7cb68;
+  flex-shrink: 0;
+  font-size: clamp(11px, 2.6cqw, 15px);
+}
+
+.donor-empty {
+  font-size: clamp(10px, 2.4cqw, 13.5px);
+  color: rgba(255, 235, 195, 0.6);
+  font-style: italic;
+  text-align: center;
+  padding: 8px 4px;
+  font-family: 'Be Vietnam Pro', 'Segoe UI', -apple-system, sans-serif;
+}
+
+.donor-footer {
+  margin: clamp(4px, 0.6vh, 8px) 0 2px;
+  text-align: center;
+  font-size: clamp(9px, 2.2cqw, 12.5px);
+  color: rgba(246, 203, 101, 0.7);
+  letter-spacing: .08em;
+  font-style: italic;
+  font-family: 'Be Vietnam Pro', 'Segoe UI', -apple-system, sans-serif;
+}
+
+/* ========================================================
+   BẢNG QUÀ PHÁT NGUYỆN (THIẾT KẾ CARD THẺ MÀU THEO MẪU)
+   Sleek, lớn hơn, rõ ràng, không che chắn điện thờ Phật
+======================================================== */
+.guide-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: clamp(5px, 0.7vh, 9px) clamp(8px, 1.8cqw, 14px);
+  border-radius: clamp(8px, 1.8cqw, 11px);
+  background: linear-gradient(135deg, rgba(38, 14, 30, 0.88), rgba(18, 10, 22, 0.92));
+  border: 1px solid rgba(246, 203, 101, 0.5);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.45), inset 0 0 6px rgba(246, 187, 76, 0.12);
+  backdrop-filter: blur(8px);
+}
+
+.guide-title-text {
+  font-family: 'Be Vietnam Pro', 'Segoe UI', -apple-system, sans-serif;
+  font-size: clamp(10px, 2.5cqw, 15px);
+  font-weight: 800;
+  color: #ffebaa;
+  letter-spacing: .04em;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7);
+  white-space: nowrap;
+}
+
+.guide-cards {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(3px, 0.45vh, 6px);
+  margin-top: clamp(3px, 0.45vh, 6px);
+}
+
+.guide-card {
+  display: flex;
+  align-items: center;
+  gap: clamp(6px, 1.4cqw, 10px);
+  padding: clamp(3.5px, 0.5vh, 7px) clamp(7px, 1.6cqw, 12px);
+  min-height: clamp(24px, 3.2vh, 38px);
+  border-radius: clamp(7px, 1.6cqw, 10px);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  transition: transform .18s ease, box-shadow .18s ease;
+  cursor: default;
+}
+
+.guide-card:hover {
+  transform: translateX(-1px);
+}
+
+.card-icon {
+  font-size: clamp(13px, 3cqw, 20px);
+  line-height: 1;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+}
+
+.card-text {
+  display: flex;
+  flex-direction: row;
+  align-items: baseline;
+  gap: clamp(3px, 0.8cqw, 6px);
+  min-width: 0;
+  line-height: 1.1;
+  overflow: hidden;
+}
+
+.card-title {
+  font-family: 'Be Vietnam Pro', 'Segoe UI', -apple-system, sans-serif;
+  font-size: clamp(10px, 2.5cqw, 15px);
+  font-weight: 700;
+  color: #ffffff;
+  letter-spacing: .01em;
+  white-space: nowrap;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.card-sub {
+  font-family: 'Be Vietnam Pro', 'Segoe UI', -apple-system, sans-serif;
+  font-size: clamp(8.5px, 2.1cqw, 13px);
+  color: rgba(255, 255, 255, 0.78);
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
+}
+
+.card-sub::before {
+  content: "·";
+  margin-right: 2px;
+  opacity: 0.6;
+}
+
+/* 7 Color Variants chuẩn theo ảnh mẫu - giảm độ đục để nhìn rõ chánh điện phía sau */
+.card-rose {
+  background: linear-gradient(90deg, rgba(225, 29, 72, 0.35) 0%, rgba(136, 19, 55, 0.22) 60%, rgba(20, 10, 18, 0.38) 100%);
+  border: 0.8px solid rgba(251, 113, 133, 0.45);
+  box-shadow: 0 2px 8px rgba(225, 29, 72, 0.16), inset 0 0 6px rgba(251, 113, 133, 0.1);
+}
+
+.card-purple {
+  background: linear-gradient(90deg, rgba(147, 51, 234, 0.35) 0%, rgba(88, 28, 135, 0.22) 60%, rgba(20, 10, 18, 0.38) 100%);
+  border: 0.8px solid rgba(192, 132, 252, 0.45);
+  box-shadow: 0 2px 8px rgba(147, 51, 234, 0.16), inset 0 0 6px rgba(192, 132, 252, 0.1);
+}
+
+.card-teal {
+  background: linear-gradient(90deg, rgba(13, 148, 136, 0.35) 0%, rgba(17, 94, 89, 0.22) 60%, rgba(20, 10, 18, 0.38) 100%);
+  border: 0.8px solid rgba(45, 212, 191, 0.45);
+  box-shadow: 0 2px 8px rgba(13, 148, 136, 0.16), inset 0 0 6px rgba(45, 212, 191, 0.1);
+}
+
+.card-amber {
+  background: linear-gradient(90deg, rgba(217, 119, 6, 0.35) 0%, rgba(146, 64, 14, 0.22) 60%, rgba(20, 10, 18, 0.38) 100%);
+  border: 0.8px solid rgba(251, 191, 36, 0.45);
+  box-shadow: 0 2px 8px rgba(217, 119, 6, 0.16), inset 0 0 6px rgba(251, 191, 36, 0.1);
+}
+
+.card-ruby {
+  background: linear-gradient(90deg, rgba(190, 24, 93, 0.35) 0%, rgba(131, 24, 67, 0.22) 60%, rgba(20, 10, 18, 0.38) 100%);
+  border: 0.8px solid rgba(244, 114, 182, 0.45);
+  box-shadow: 0 2px 8px rgba(190, 24, 93, 0.16), inset 0 0 6px rgba(244, 114, 182, 0.1);
+}
+
+.card-green {
+  background: linear-gradient(90deg, rgba(22, 163, 74, 0.35) 0%, rgba(20, 83, 45, 0.22) 60%, rgba(20, 10, 18, 0.38) 100%);
+  border: 0.8px solid rgba(74, 222, 128, 0.45);
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.16), inset 0 0 6px rgba(74, 222, 128, 0.1);
+}
+
+.card-gold {
+  background: linear-gradient(90deg, rgba(202, 138, 4, 0.38) 0%, rgba(133, 77, 14, 0.24) 60%, rgba(20, 10, 18, 0.38) 100%);
+  border: 0.8px solid rgba(250, 204, 21, 0.5);
+  box-shadow: 0 2px 8px rgba(202, 138, 4, 0.2), inset 0 0 6px rgba(250, 204, 21, 0.12);
+}
+
+/* ========================================================
+   BANNER CHÚC MỪNG MỐC 1.000 TIM THỈNH ĐẠI HỒNG CHUNG
+======================================================== */
+.bell-milestone-banner {
+  position: absolute;
+  z-index: 10;
+  left: 50%;
+  top: 36%;
+  transform: translate(-50%, -50%) scale(0.9);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 20px;
+  border: 2px solid #ffd700;
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(60, 20, 36, 0.95), rgba(28, 10, 26, 0.96));
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8), 0 0 30px rgba(255, 215, 0, 0.4), inset 0 0 16px rgba(255, 215, 0, 0.25);
+  backdrop-filter: blur(10px);
+  color: #fff9e8;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .35s ease, transform .4s cubic-bezier(.2,.85,.22,1.2);
+}
+
+.bell-milestone-banner.is-visible {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.bell-banner-icon {
+  font-size: 32px;
+  line-height: 1;
+  filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.8));
+  animation: bellRing 1.2s ease infinite;
+}
+
+@keyframes bellRing {
+  0%, 100% { transform: rotate(0deg); }
+  25% { transform: rotate(-14deg); }
+  75% { transform: rotate(14deg); }
+}
+
+.bell-banner-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.bell-banner-title {
+  font-family: 'Be Vietnam Pro', 'Segoe UI', -apple-system, Roboto, sans-serif;
+  font-size: clamp(14px, 1.8vh, 17px);
+  font-weight: 800;
+  color: #ffd700;
+  letter-spacing: .04em;
+  text-shadow: 0 0 12px rgba(255, 215, 0, 0.6);
+  white-space: nowrap;
+}
+
+.bell-banner-sub {
+  font-family: 'Be Vietnam Pro', 'Segoe UI', -apple-system, Roboto, sans-serif;
+  font-size: clamp(10px, 1.2vh, 12px);
+  color: #fff4d2;
+  margin-top: 2px;
+  white-space: nowrap;
+}
+
+/* ========================================================
+   MÀN VINH DANH ĐẠI LỄ HỒI HƯỚNG CÔNG ĐỨC MỖI 10 PHÚT
+======================================================== */
+.ceremony-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 12;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(circle at center, rgba(38, 12, 32, 0.72) 0%, rgba(14, 6, 16, 0.82) 85%);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .6s ease;
+  overflow: hidden;
+}
+
+.ceremony-overlay.is-active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.ceremony-lotus-field {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 1;
+  overflow: hidden;
+}
+
+.ceremony-lotus-petal {
+  position: absolute;
+  top: -40px;
+  pointer-events: none;
+  user-select: none;
+  animation: floatLotus linear forwards;
+  filter: drop-shadow(0 0 10px rgba(255, 182, 193, 0.85));
+}
+
+@keyframes floatLotus {
+  0% {
+    transform: translateY(0) rotate(0deg) scale(0.6);
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.95;
+  }
+  85% {
+    opacity: 0.95;
+  }
+  100% {
+    transform: translateY(105vh) rotate(360deg) scale(1.15);
+    opacity: 0;
+  }
+}
+
+.ceremony-halo {
+  position: absolute;
+  width: 320px;
+  height: 320px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255, 215, 0, 0.25) 0%, transparent 70%);
+  animation: haloPulse 3s ease-in-out infinite alternate;
+}
+
+@keyframes haloPulse {
+  from { transform: scale(0.9); opacity: 0.6; }
+  to { transform: scale(1.2); opacity: 1; }
+}
+
+.ceremony-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  padding: 24px 20px;
+  max-width: 380px;
+  border: 1.5px solid rgba(255, 215, 0, 0.7);
+  border-radius: 20px;
+  background: linear-gradient(135deg, rgba(32, 12, 28, 0.95), rgba(18, 8, 20, 0.98));
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.85), 0 0 35px rgba(255, 215, 0, 0.35), inset 0 0 20px rgba(255, 215, 0, 0.2);
+}
+
+.ceremony-kicker {
+  font-family: 'Be Vietnam Pro', 'Segoe UI', -apple-system, Roboto, sans-serif;
+  font-size: 10px;
+  font-weight: 800;
+  color: #ffd700;
+  letter-spacing: .2em;
+  margin-bottom: 6px;
+}
+
+.ceremony-title {
+  margin: 0 0 10px;
+  font-family: 'Be Vietnam Pro', 'Segoe UI', -apple-system, Roboto, sans-serif;
+  font-size: clamp(17px, 2.2vh, 21px);
+  font-weight: 800;
+  color: #fff9e8;
+  letter-spacing: .04em;
+  text-shadow: 0 0 16px rgba(255, 215, 0, 0.7);
+}
+
+.ceremony-chant {
+  margin: 0;
+  font-family: 'Be Vietnam Pro', 'Segoe UI', -apple-system, Roboto, sans-serif;
+  font-size: clamp(11.5px, 1.45vh, 13.5px);
+  line-height: 1.7;
+  color: #ffebbe;
+  font-style: italic;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.8);
+}
+
+/* ========================================================
+   THẺ QUẺ XĂM LINH ỨNG (KHI NGƯỜI XEM BÌNH LUẬN "GIEO QUẺ")
+   Thiết kế thẻ bài hoàng kim thiền môn, sang trọng & nổi bật
+======================================================== */
+.fortune-card-overlay {
+  position: absolute;
+  z-index: 12;
+  left: 50%;
+  top: 48%;
+  transform: translate(-50%, -50%) scale(0.92);
+  width: clamp(320px, 76cqw, 740px);
+  max-width: calc(100% - 24px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.35s ease, transform 0.4s cubic-bezier(0.18, 0.9, 0.25, 1.25);
+}
+
+.fortune-card-overlay.is-visible {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  pointer-events: auto;
+}
+
+.fortune-card {
+  position: relative;
+  overflow: hidden;
+  border-radius: clamp(14px, 2.5cqw, 22px);
+  padding: clamp(14px, 2vh, 24px) clamp(16px, 2.5cqw, 28px);
+  background: linear-gradient(135deg, rgba(32, 12, 28, 0.97), rgba(18, 8, 20, 0.98));
+  border: 2px solid #ffd700;
+  box-shadow: 0 16px 50px rgba(0, 0, 0, 0.9), 0 0 30px rgba(255, 215, 0, 0.35), inset 0 0 24px rgba(246, 187, 76, 0.2);
+  backdrop-filter: blur(14px);
+  color: #fff9e6;
+  text-align: center;
+}
+
+.fortune-aura {
+  position: absolute;
+  inset: -50%;
+  background: radial-gradient(circle, rgba(255, 215, 0, 0.18) 0%, transparent 65%);
+  animation: fortuneRotate 14s linear infinite;
+  pointer-events: none;
+}
+
+@keyframes fortuneRotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.fortune-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: clamp(8px, 1.5cqw, 14px);
+  text-align: left;
+  border-bottom: 1px solid rgba(246, 203, 101, 0.35);
+  padding-bottom: clamp(6px, 1vh, 12px);
+  margin-bottom: clamp(8px, 1.2vh, 14px);
+}
+
+.fortune-stick-icon {
+  font-size: clamp(28px, 4.5cqw, 46px);
+  line-height: 1;
+  filter: drop-shadow(0 0 10px rgba(255, 215, 0, 0.7));
+}
+
+.fortune-header-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.fortune-kicker {
+  display: block;
+  font-size: clamp(9px, 1.3cqw, 14px);
+  font-weight: 800;
+  color: #f7ca68;
+  letter-spacing: .14em;
+  margin-bottom: 2px;
+}
+
+.fortune-number-title {
+  margin: 0;
+  font-family: 'Be Vietnam Pro', 'Segoe UI', sans-serif;
+  font-size: clamp(15px, 2.4cqw, 24px);
+  font-weight: 800;
+  color: #fff3d4;
+  letter-spacing: .02em;
+  text-shadow: 0 0 12px rgba(255, 215, 0, 0.55);
+}
+
+.fortune-close-btn {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(246, 203, 101, 0.4);
+  color: #f7ca68;
+  width: clamp(26px, 3.8cqw, 36px);
+  height: clamp(26px, 3.8cqw, 36px);
+  border-radius: 50%;
+  font-size: clamp(13px, 1.8cqw, 18px);
+  cursor: pointer;
+  display: grid;
+  place-items: center;
+  transition: all 0.2s ease;
+}
+
+.fortune-close-btn:hover {
+  background: rgba(255, 255, 255, 0.25);
+  color: #fff;
+  transform: scale(1.1);
+}
+
+.fortune-recipient {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: clamp(6px, 1cqw, 10px);
+  background: rgba(246, 203, 101, 0.14);
+  padding: clamp(3px, 0.5vh, 6px) clamp(10px, 1.8cqw, 18px);
+  border-radius: 999px;
+  border: 1px solid rgba(246, 203, 101, 0.45);
+  margin-bottom: clamp(8px, 1.2vh, 14px);
+}
+
+.recipient-label {
+  font-size: clamp(10px, 1.4cqw, 15px);
+  color: rgba(255, 235, 195, 0.85);
+}
+
+.recipient-name {
+  font-size: clamp(11.5px, 1.7cqw, 18px);
+  color: #ffd700;
+  font-weight: 700;
+}
+
+.fortune-poem-box {
+  position: relative;
+  background: rgba(0, 0, 0, 0.4);
+  border-left: 3.5px solid #ffd700;
+  border-right: 3.5px solid #ffd700;
+  padding: clamp(10px, 1.5vh, 18px) clamp(12px, 2cqw, 22px);
+  border-radius: 10px;
+  margin-bottom: clamp(8px, 1.2vh, 14px);
+}
+
+.fortune-poem {
+  margin: 0;
+  font-family: 'Be Vietnam Pro', Georgia, serif;
+  font-size: clamp(13px, 2.1cqw, 21px);
+  line-height: 1.7;
+  color: #ffebaa;
+  font-style: italic;
+  text-shadow: 0 1px 4px rgba(0, 0, 0, 0.85);
+}
+
+.fortune-meaning-box {
+  position: relative;
+  text-align: left;
+  background: rgba(255, 255, 255, 0.05);
+  padding: clamp(8px, 1.2vh, 14px) clamp(12px, 1.8cqw, 18px);
+  border-radius: 10px;
+  font-size: clamp(11px, 1.6cqw, 16px);
+  line-height: 1.55;
+  color: #fff6db;
+}
+
+.fortune-meaning {
+  margin: 0 0 clamp(4px, 0.6vh, 8px);
+}
+
+.fortune-meaning strong,
+.fortune-advice strong {
+  color: #f7ca68;
+}
+
+.fortune-advice {
+  margin: 0;
+  color: #e2e8f0;
+}

@@ -1,0 +1,24 @@
+{
+  "name": "chua-online-tiktok-live",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "MVP chính điện 2D cho TikTok LIVE / OBS Browser Source",
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "scripts": {
+    "dev": "node --watch server/index.js",
+    "start": "node server/index.js",
+    "check": "node --check server/index.js && node --check server/temple-service.js && node --check server/store.js",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "dotenv": "^16.6.1",
+    "express": "^4.21.2",
+    "mssql": "^11.0.1",
+    "multer": "^2.0.2",
+    "phaser": "^3.90.0",
+    "socket.io": "^4.8.1"
+  }
+}

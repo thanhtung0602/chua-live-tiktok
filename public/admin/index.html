@@ -1,0 +1,560 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Quản trị · Chùa Online</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="/admin/admin.css" />
+  </head>
+  <body>
+    <div class="admin-shell">
+      <aside class="sidebar">
+        <a class="brand" href="/" target="_blank" rel="noreferrer"
+          ><span>☸</span>
+          <div>
+            <small>CHÙA ONLINE</small><strong>An Lạc · Studio</strong>
+          </div></a
+        >
+        <nav class="nav-tabs" aria-label="Điều hướng quản trị">
+          <button class="active" data-tab="overview">
+            ⌘ <span>Tổng quan</span>
+          </button>
+          <button data-tab="audio">♫ <span>Âm thanh &amp; kinh</span></button>
+          <button data-tab="gifts">✦ <span>Quà tặng</span></button>
+          <button data-tab="people">☸ <span>Thiện hữu</span></button>
+          <button data-tab="live">◉ <span>TikTok LIVE</span></button>
+        </nav>
+        <div class="sidebar-note">
+          <b>Chế độ MVP</b>
+          <p>
+            Sự kiện giả lập hoạt động độc lập. Chỉ nối nguồn LIVE được phép qua
+            webhook/API chính thức.
+          </p>
+        </div>
+      </aside>
+
+      <main class="content">
+        <header class="topbar">
+          <div>
+            <p class="breadcrumb">BẢNG ĐIỀU KHIỂN</p>
+            <h1 id="page-title">Tổng quan chính điện</h1>
+          </div>
+          <div class="top-actions">
+            <a class="view-link" href="/" target="_blank" rel="noreferrer"
+              >Mở màn OBS ↗</a
+            >
+            <label
+              class="token-field"
+              title="Chỉ cần khi ADMIN_TOKEN đã đặt trong .env"
+              ><span>Khóa admin</span
+              ><input
+                id="admin-token"
+                type="password"
+                autocomplete="off"
+                placeholder="Tùy chọn"
+            /></label>
+            <span class="connection" id="connection-state"
+              ><i></i> Đang kết nối</span
+            >
+          </div>
+        </header>
+
+        <section class="page active" id="overview-page">
+          <div class="metric-grid">
+            <article class="metric-card">
+              <span class="metric-icon rose">♥</span>
+              <div>
+                <small>TỔNG LƯỢT TIM</small><strong id="metric-likes">0</strong
+                ><em id="metric-anonymous">0 không định danh</em>
+              </div>
+            </article>
+            <article class="metric-card">
+              <span class="metric-icon lotus">☸</span>
+              <div>
+                <small>ĐANG TRONG CHÙA</small
+                ><strong id="metric-presence">0 / 18</strong
+                ><em>vị trí lễ Phật</em>
+              </div>
+            </article>
+            <article class="metric-card">
+              <span class="metric-icon gold">✦</span>
+              <div>
+                <small>PHÁP DUYÊN</small><strong id="metric-gifts">0</strong
+                ><em id="metric-queue">hàng đợi trống</em>
+              </div>
+            </article>
+            <article class="metric-card">
+              <span class="metric-icon sound">♫</span>
+              <div>
+                <small>ÂM THANH</small
+                ><strong id="metric-audio">Đang dừng</strong
+                ><em id="metric-track">Chưa chọn bài</em>
+              </div>
+            </article>
+          </div>
+
+          <div class="two-column overview-grid">
+            <section class="panel simulator-panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">KIỂM THỬ KHÔNG CẦN TIKTOK</p>
+                  <h2>Gửi sự kiện giả lập</h2>
+                </div>
+                <span class="chip">MVP</span>
+              </div>
+              <div class="simulation-tabs">
+                <button class="sim-tab active" data-sim="like">♥ Tim</button
+                ><button class="sim-tab" data-sim="gift">✦ Quà</button
+                ><button class="sim-tab" data-sim="comment">◌ Bình luận</button
+                ><button class="sim-tab" data-sim="leave">🚪 Rời live (Lướt đi)</button>
+              </div>
+              <form id="simulate-form" class="form-stack">
+                <div class="field-row">
+                  <label
+                    >Mã người xem<input
+                      name="viewerId"
+                      value="thanh-tung" /></label
+                  ><label
+                    >Username<input name="username" value="ThanhTung"
+                  /></label>
+                </div>
+                <div class="field-row">
+                  <label
+                    >Nickname<input name="nickname" value="Thanh Tùng" /></label
+                  ><label id="sim-count-field"
+                    >Số lượt tim<input
+                      name="count"
+                      type="number"
+                      min="1"
+                      value="1"
+                  /></label>
+                </div>
+                <label class="sim-only gift-field" hidden
+                  >Quà tặng<select name="giftId" id="sim-gift"></select
+                ></label>
+                <label class="sim-only comment-field" hidden
+                  >Nội dung bình luận<input name="text" value="!roi"
+                /></label>
+                <button class="primary wide" type="submit" id="simulate-submit">
+                  Gửi tim vào chính điện
+                </button>
+              </form>
+              <p class="form-hint">
+                Bỏ trống “Mã người xem” khi thử tim ẩn danh: hệ thống chỉ cộng
+                tim, không tạo nhân vật.
+              </p>
+              <div class="quick-sim-bar">
+                <p class="eyebrow">THỬ NHANH 1 CHẠM</p>
+                <div class="quick-actions">
+                  <button type="button" class="quick-btn" data-quick="like-random">➕ Thêm Phật tử mới</button>
+                  <button type="button" class="quick-btn" data-quick="gift-lotus">🪷 Dâng Hoa Sen</button>
+                  <button type="button" class="quick-btn" data-quick="gift-bell">🔔 Thỉnh Chuông</button>
+                  <button type="button" class="quick-btn" data-quick="gift-lion">🦁 Đại Lễ Sư Tử</button>
+                  <button type="button" class="quick-btn" data-quick="comment-pray">🙏 Niệm Phật</button>
+                  <button type="button" class="quick-btn" data-quick="comment-fortune" style="border-color: #c084fc; color: #c084fc;">🎋 Thử gieo quẻ ("gieo quẻ")</button>
+                  <button type="button" class="quick-btn" id="btn-admin-bell" style="border-color: #ffd700; color: #ffd700;">🔔 Thử thỉnh Đại Hồng Chung</button>
+                  <button type="button" class="quick-btn" id="btn-admin-ceremony" style="border-color: #f7ca68; color: #f7ca68;">🙏 Cử hành Lễ Hồi Hướng ngay</button>
+                  <button type="button" class="quick-btn" id="btn-quick-protection" style="border-color: #38bdf8; color: #38bdf8;">🛡️ Kích hoạt giữ nhịp Treo Live</button>
+                  <button type="button" class="quick-btn" data-quick="leave-active" style="border-color: #f43f5e; color: #f43f5e;">🚪 Thử 1 người lướt đi (Out)</button>
+                </div>
+              </div>
+            </section>
+
+            <section class="panel settings-panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">CẤU HÌNH VẬN HÀNH</p>
+                  <h2>Chính điện</h2>
+                </div>
+              </div>
+              <form id="settings-form" class="form-stack compact">
+                <div class="field-row">
+                  <label
+                    >Số nhân vật tối đa<input
+                      name="maxCharacters"
+                      type="number"
+                      min="1"
+                      max="36"
+                      required /><small>Hỗ trợ tối đa 36 vị trí bồ đoàn</small></label
+                  ><label
+                    >Tự out khi lướt đi / ngưng tương tác
+                    <select name="autoLeaveSeconds" id="auto-leave-seconds">
+                      <option value="30">30 giây (Rất nhanh)</option>
+                      <option value="60">60 giây (1 phút)</option>
+                      <option value="90">90 giây (1.5 phút - Khuyên dùng)</option>
+                      <option value="120">120 giây (2 phút)</option>
+                      <option value="180">180 giây (3 phút)</option>
+                      <option value="300">300 giây (5 phút)</option>
+                      <option value="0">Tắt (Không tự out)</option>
+                    </select>
+                    <small>Người xem lướt đi không tương tác sẽ tự động out</small>
+                  </label>
+                </div>
+                <label
+                  >Từ khóa rời chùa
+                  <input
+                    name="leaveKeywords"
+                    placeholder="!roi, !rời, rời chùa"
+                  /><small>Phân cách bằng dấu phẩy.</small></label
+                >
+                <div class="rule"></div>
+                <div class="field-row">
+                  <label
+                    >Âm lượng <output id="volume-output">62%</output
+                    ><input
+                      name="volume"
+                      id="volume-input"
+                      type="range"
+                      min="0"
+                      max="1"
+                      step="0.01" /></label
+                  ><label
+                    >Chế độ phát<select name="mode">
+                      <option value="sequential">Lần lượt</option>
+                      <option value="random">Ngẫu nhiên</option>
+                    </select></label
+                  >
+                </div>
+                <div class="checkboxes">
+                  <label
+                    ><input type="checkbox" name="loopList" /> Lặp danh
+                    sách</label
+                  ><label
+                    ><input type="checkbox" name="repeatTrack" /> Lặp một
+                    bài</label
+                  >
+                </div>
+                <div class="rule"></div>
+                <div>
+                  <p class="eyebrow">GIỌNG NÓI AI (TEXT-TO-SPEECH)</p>
+                  <small style="color: var(--text-muted); display: block; margin-top: -2px; margin-bottom: 8px;">Tự động chào đón người vào chùa &amp; tri ân khi dâng quà (chống lặp câu nói)</small>
+                </div>
+                <div class="checkboxes">
+                  <label><input type="checkbox" name="aiVoiceEnabled" id="ai-voice-enabled" checked /> Bật giọng nói AI</label>
+                  <label><input type="checkbox" name="aiWelcomeEnabled" id="ai-welcome-enabled" checked /> Chào mừng khi vào chùa</label>
+                  <label><input type="checkbox" name="aiGiftThanksEnabled" id="ai-gift-enabled" checked /> Tri ân khi dâng quà</label>
+                </div>
+                <div class="field-row">
+                  <label>Tốc độ đọc <output id="ai-rate-output">0.92x</output>
+                    <input name="aiRate" id="ai-rate-input" type="range" min="0.75" max="1.25" step="0.02" value="0.92" />
+                  </label>
+                  <label>Âm lượng AI <output id="ai-volume-output">90%</output>
+                    <input name="aiVolume" id="ai-volume-input" type="range" min="0" max="1" step="0.05" value="0.9" />
+                  </label>
+                </div>
+                <div class="field-row" style="margin-top: 4px;">
+                  <label style="grid-column: 1 / -1;">Chọn giọng AI phát biểu
+                    <select name="aiPreferredVoice" id="ai-voice-select">
+                      <option value="">✨ Giọng AI Tự Nhiên (Google Cloud TTS - Trong trẻo, 100% phát tiếng)</option>
+                    </select>
+                  </label>
+                </div>
+                <div class="field-row" style="margin-top: 4px;">
+                  <button type="button" class="text-button" id="test-speech-welcome">🎙️ Thử lời chào</button>
+                  <button type="button" class="text-button" id="test-speech-gift">🪷 Thử cảm ơn quà</button>
+                </div>
+                <div class="rule"></div>
+                <div>
+                  <p class="eyebrow" style="color: #ffd700;">🛡️ CHẾ ĐỘ TREO LIVE 24/7 (CHỐNG QUÉT TĨNH TIKTOK)</p>
+                  <small style="color: var(--text-muted); display: block; margin-top: -2px; margin-bottom: 8px;">Tự động giữ nhịp tương tác và chuyển động khi phòng vắng để không bị TikTok báo Live không hoạt động</small>
+                </div>
+                <div class="checkboxes">
+                  <label><input type="checkbox" name="protectionEnabled" id="protection-enabled" checked /> Bật chế độ Treo Live 24/7</label>
+                  <label><input type="checkbox" name="protectionAutoWorshipper" id="protection-auto-worshipper" checked /> Phật tử ảo vào lạy Phật khi vắng</label>
+                  <label><input type="checkbox" name="protectionAmbientSpeech" id="protection-ambient-speech" checked /> AI định kỳ chúc an lạc &amp; niệm Phật</label>
+                  <label><input type="checkbox" name="protectionAutoLike" id="protection-auto-like" checked /> Thả tim tự động nhịp nhàng (rung chuông)</label>
+                </div>
+                <div class="field-row" style="margin-top: 6px;">
+                  <label>Chu kỳ kiểm tra vắng (phút)
+                    <input name="protectionInterval" id="protection-interval" type="number" min="1" max="15" step="0.5" value="2.5" />
+                  </label>
+                  <label>Chu kỳ AI nhắc lời (phút)
+                    <input name="protectionSpeechInterval" id="protection-speech-interval" type="number" min="2" max="30" step="0.5" value="4.0" />
+                  </label>
+                </div>
+                <div class="field-row" style="margin-top: 6px;">
+                  <button type="button" class="text-button" id="btn-test-ambient-speech">🙏 Thử lời chúc an lạc</button>
+                  <button type="button" class="text-button" id="btn-trigger-protection" style="border-color: #ffd700; color: #ffd700;">⚡ Giữ nhịp ngay</button>
+                </div>
+                <button class="secondary" type="submit" style="margin-top: 10px;">Lưu cấu hình</button>
+              </form>
+            </section>
+
+            <section class="panel leaderboard-panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">BẢNG VÀNG CÚNG DƯỜNG</p>
+                  <h2>Tấm lòng thành</h2>
+                </div>
+                <button type="button" class="danger small" id="reset-leaderboard-btn">Đặt lại bảng</button>
+              </div>
+              <div id="admin-donor-list" class="data-list empty-state">Chưa có pháp duyên cúng dường.</div>
+            </section>
+          </div>
+        </section>
+
+        <section class="page" id="audio-page">
+          <div class="page-intro">
+            <div>
+              <p class="eyebrow">PHÁT LIÊN TỤC TRÊN OBS</p>
+              <h2>Âm thanh &amp; danh sách bài kinh</h2>
+              <p>Chỉ tải lên bản ghi mà bạn có quyền sử dụng.</p>
+            </div>
+          </div>
+          <div class="two-column audio-grid">
+            <section class="panel now-playing">
+              <p class="eyebrow">ĐANG PHÁT</p>
+              <h3 id="now-track">Chưa chọn bài</h3>
+              <p id="now-mode">Danh sách sẽ phát tự động khi có bài.</p>
+              <div class="transport">
+                <button data-audio="previous" title="Bài trước">◀</button
+                ><button class="play" data-audio="play" title="Phát">▶</button
+                ><button data-audio="pause" title="Tạm dừng">Ⅱ</button
+                ><button data-audio="next" title="Bài tiếp">▶</button>
+              </div>
+              <p class="audio-tip">
+                Chuyển bài có crossfade trong nguồn trình duyệt để tránh ngắt
+                đột ngột.
+              </p>
+            </section>
+            <section class="panel upload-panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">THƯ VIỆN ÂM THANH</p>
+                  <h3>Tải bài kinh</h3>
+                </div>
+              </div>
+              <form
+                id="upload-form"
+                class="form-stack"
+                enctype="multipart/form-data"
+              >
+                <label
+                  >Tên hiển thị<input
+                    name="title"
+                    placeholder="Ví dụ: Kinh A Di Đà" /></label
+                ><label class="file-input"
+                  >Chọn file âm thanh<input
+                    name="audio"
+                    type="file"
+                    accept="audio/*,.m4a,.wav,.ogg,.aac,.flac"
+                    required
+                  /><span>Chọn MP3, M4A, WAV…</span></label
+                ><button class="primary" type="submit">Tải lên thư viện</button>
+              </form>
+            </section>
+          </div>
+          <section class="panel list-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">PLAYLIST</p>
+                <h3>Bài đã tải lên</h3>
+              </div>
+              <span id="track-count" class="muted"></span>
+            </div>
+            <div id="tracks-list" class="data-list empty-state">
+              Chưa có bài âm thanh.
+            </div>
+          </section>
+        </section>
+
+        <section class="page" id="gifts-page">
+          <div class="page-intro">
+            <div>
+              <p class="eyebrow">ÁNH XẠ TIKTOK → HOẠT CẢNH</p>
+              <h2>Quà tặng &amp; lời cảm ơn</h2>
+              <p>
+                Quà ưu tiên cao được trình diễn trước; chỉ một camera zoom hoạt
+                động tại một thời điểm.
+              </p>
+            </div>
+          </div>
+          <div class="two-column gifts-grid">
+            <section class="panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">THÊM / SỬA</p>
+                  <h3 id="gift-form-title">Tạo ánh xạ quà</h3>
+                </div>
+                <button id="gift-reset" class="text-button" type="button">
+                  Tạo mới
+                </button>
+              </div>
+              <form id="gift-form" class="form-stack compact">
+                <input type="hidden" name="id" />
+                <div class="field-row">
+                  <label
+                    >Mã quà TikTok<input
+                      name="providerGiftId"
+                      required
+                      placeholder="rose" /></label
+                  ><label
+                    >Tên quà<input name="name" required placeholder="Hoa hồng"
+                  /></label>
+                </div>
+                <div class="field-row">
+                  <label
+                    >Ưu tiên<input
+                      name="priority"
+                      type="number"
+                      value="10" /></label
+                  ><label
+                    >Thời gian (ms)<input
+                      name="durationMs"
+                      type="number"
+                      min="2500"
+                      value="4000"
+                  /></label>
+                </div>
+                <div class="field-row">
+                  <label
+                    >Animation<select name="animation">
+                      <option value="offer-flower">Dâng hoa</option>
+                      <option value="lantern">Đèn lồng</option>
+                      <option value="lotus">Hoa sen</option>
+                      <option value="bell">Chuông</option>
+                      <option value="lion-ceremony">Hoạt cảnh Sư Tử</option>
+                      <option value="thank">Cảm ơn</option>
+                    </select></label
+                  ><label
+                    >Hiệu ứng<select name="specialEffect">
+                      <option value="petals">Cánh hoa</option>
+                      <option value="lantern">Đèn lồng</option>
+                      <option value="lotus">Hoa sen</option>
+                      <option value="golden-bell">Chuông kim quang</option>
+                      <option value="lion">Sư Tử đặc biệt</option>
+                      <option value="none">Không</option>
+                    </select></label
+                  >
+                </div>
+                <div class="field-row">
+                  <label
+                    >Ảnh quà (URL)<input
+                      name="imageUrl"
+                      type="url"
+                      placeholder="https://..." /></label
+                  ><label
+                    >Âm thanh hiệu ứng (URL)<input
+                      name="soundUrl"
+                      type="url"
+                      placeholder="/uploads/... hoặc https://..."
+                  /></label>
+                </div>
+                <label
+                  >Nội dung cảm ơn<input
+                    name="thankYouTemplate"
+                    value="🙏 Cảm ơn @{username} đã gửi {gift}!"
+                    required
+                  /><small>Dùng {username}, {nickname}, {gift}.</small></label
+                ><label class="check-one"
+                  ><input name="enabled" type="checkbox" checked /> Bật ánh xạ
+                  này</label
+                ><button class="primary" type="submit">Lưu quà tặng</button>
+              </form>
+            </section>
+            <section class="panel list-panel">
+              <div class="panel-heading">
+                <div>
+                  <p class="eyebrow">ĐANG CẤU HÌNH</p>
+                  <h3>Danh mục quà</h3>
+                </div>
+                <span id="gift-count" class="muted"></span>
+              </div>
+              <div id="gifts-list" class="data-list"></div>
+            </section>
+          </div>
+        </section>
+
+        <section class="page" id="people-page">
+          <div class="page-intro">
+            <div>
+              <p class="eyebrow">HIỆN DIỆN THỜI GIAN THỰC</p>
+              <h2>Thiện hữu trong chính điện</h2>
+              <p>
+                Nhân vật chỉ được cấp một lần theo mã định danh; vị trí lễ được
+                giải phóng sau khi rời cổng.
+              </p>
+            </div>
+          </div>
+          <section class="panel list-panel">
+            <div class="panel-heading">
+              <div>
+                <p class="eyebrow">DANH SÁCH HIỆN DIỆN</p>
+                <h3 id="presence-label">0 thiện hữu</h3>
+              </div>
+            </div>
+            <div id="people-list" class="data-list empty-state">
+              Chính điện đang yên tĩnh.
+            </div>
+          </section>
+        </section>
+
+        <section class="page" id="live-page">
+          <div class="page-intro">
+            <div>
+              <p class="eyebrow">TÍCH HỢP HỢP LỆ</p>
+              <h2>TikTok LIVE</h2>
+              <p>
+                Ứng dụng không sử dụng scraping hay socket LIVE không được công
+                bố. Hãy đưa sự kiện chuẩn hóa từ API/nhà cung cấp được phép vào
+                webhook có xác thực.
+              </p>
+            </div>
+          </div>
+          <div class="two-column live-grid">
+            <section class="panel provider-card">
+              <p class="eyebrow">TRẠNG THÁI NGUỒN</p>
+              <h3 id="provider-name">Mock simulator</h3>
+              <div class="provider-status" id="provider-status">
+                <i></i><span>Đã ngắt kết nối</span>
+              </div>
+              <p id="provider-description">
+                Dùng trình giả lập ở tab Tổng quan để thử toàn bộ luồng trước
+                khi tích hợp thật.
+              </p>
+              <form id="provider-form" class="inline-form">
+                <input
+                  name="channel"
+                  placeholder="Kênh / định danh LIVE (@username)"
+                  value="@camsisi0"
+                /><button class="primary" type="submit">Kết nối kênh</button
+                ><button id="disconnect-live" class="secondary" type="button">
+                  Ngắt
+                </button>
+              </form>
+            </section>
+            <section class="panel webhook-card">
+              <p class="eyebrow">WEBHOOK API</p>
+              <h3>Endpoint nhận sự kiện</h3>
+              <code>POST /api/live/events</code>
+              <p>
+                Gửi header <code>x-live-secret</code> (hoặc Bearer token) bằng
+                giá trị <code>LIVE_WEBHOOK_SECRET</code>. Sự kiện hỗ trợ:
+                <code>like</code>, <code>gift</code>, <code>comment</code>.
+              </p>
+              <details>
+                <summary>Mẫu payload quà</summary>
+                <pre>
+{
+  "type": "gift", "eventId": "provider-id-1",
+  "viewer": { "id": "u-1", "username": "thanh_tung", "nickname": "Thanh Tùng" },
+  "giftId": "lion", "repeatCount": 1
+}</pre
+                >
+              </details>
+            </section>
+          </div>
+        </section>
+      </main>
+    </div>
+    <div id="toast" role="status" aria-live="polite"></div>
+    <script src="/socket.io/socket.io.js"></script>
+    <script type="module" src="/admin/admin.js"></script>
+  </body>
+</html>

@@ -1,0 +1,20 @@
+# Node dependencies
+node_modules/
+
+# Environment files
+.env
+.env.local
+
+# Runtime local state (data/state.default.json is preserved as seed)
+data/state.json
+
+# Audio TTS runtime cache
+public/uploads/audio/tts-cache/
+
+# Root level duplicate media files
+/*.mp3
+
+# Editor / OS files
+.vscode/
+.DS_Store
+Thumbs.db

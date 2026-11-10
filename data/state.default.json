@@ -1,0 +1,155 @@
+{
+  "settings": {
+    "maxCharacters": 36,
+    "autoLeaveMinutes": 0,
+    "autoLeaveSeconds": 90,
+    "leaveKeywords": [
+      "!roi",
+      "!rời",
+      "rời chùa"
+    ],
+    "audio": {
+      "status": "playing",
+      "currentTrackId": "track_niem_phat",
+      "volume": 0.65,
+      "mode": "sequential",
+      "loopList": true,
+      "repeatTrack": false,
+      "revision": 1
+    },
+    "aiVoice": {
+      "enabled": true,
+      "welcomeEnabled": true,
+      "giftThanksEnabled": true,
+      "volume": 1,
+      "rate": 1.25,
+      "preferredVoice": ""
+    },
+    "liveProtection": {
+      "enabled": true,
+      "autoWorshipperEnabled": true,
+      "ambientSpeechEnabled": true,
+      "autoLikeEnabled": true,
+      "intervalMinutes": 2.5,
+      "speechIntervalMinutes": 4
+    }
+  },
+  "gifts": [
+    {
+      "id": "rose",
+      "providerGiftId": "rose",
+      "name": "Hoa hồng",
+      "imageUrl": "",
+      "animation": "offer-flower",
+      "soundUrl": "",
+      "durationMs": 3600,
+      "thankYouTemplate": "🙏 Cảm ơn @{username} đã dâng {gift}!",
+      "priority": 10,
+      "specialEffect": "petals",
+      "enabled": true
+    },
+    {
+      "id": "small-gift",
+      "providerGiftId": "small-gift",
+      "name": "Quà nhỏ",
+      "imageUrl": "",
+      "animation": "lantern",
+      "soundUrl": "",
+      "durationMs": 3800,
+      "thankYouTemplate": "🙏 Cảm ơn @{username} đã thắp sáng một ngọn đèn!",
+      "priority": 20,
+      "specialEffect": "lantern",
+      "enabled": true
+    },
+    {
+      "id": "lotus",
+      "providerGiftId": "lotus",
+      "name": "Hoa sen",
+      "imageUrl": "",
+      "animation": "lotus",
+      "soundUrl": "",
+      "durationMs": 4400,
+      "thankYouTemplate": "🙏 Cảm ơn @{username} đã dâng {gift} thanh tịnh!",
+      "priority": 35,
+      "specialEffect": "lotus",
+      "enabled": true
+    },
+    {
+      "id": "bell",
+      "providerGiftId": "bell",
+      "name": "Chuông chùa",
+      "imageUrl": "",
+      "animation": "bell",
+      "soundUrl": "/assets/temple_bell.wav",
+      "durationMs": 5000,
+      "thankYouTemplate": "🙏 Cảm ơn @{username} đã gửi {gift}!",
+      "priority": 60,
+      "specialEffect": "golden-bell",
+      "enabled": true
+    },
+    {
+      "id": "lion",
+      "providerGiftId": "lion",
+      "name": "Sư Tử",
+      "imageUrl": "",
+      "animation": "lion-ceremony",
+      "soundUrl": "",
+      "durationMs": 5600,
+      "thankYouTemplate": "🙏 Cảm ơn @{username} đã gửi tặng {gift}!",
+      "priority": 100,
+      "specialEffect": "lion",
+      "enabled": true
+    }
+  ],
+  "tracks": [
+    {
+      "id": "track_niem_phat",
+      "title": "Niệm Phật - Nam Mô A Di Đà Phật",
+      "filePath": "/uploads/audio/niem-nam-mo-a-di-da-phat.mp3",
+      "enabled": true
+    },
+    {
+      "id": "track_niem_phat_thanh_tinh",
+      "title": "Niệm Nam Mô A Di Đà Phật (Thanh Tịnh Trầm Ấm)",
+      "filePath": "/uploads/audio/niem-nam-mo-a-di-da-phat-thanh-tinh.mp3",
+      "enabled": true
+    },
+    {
+      "id": "track_niem_phat_diu_em",
+      "title": "Niệm Nam Mô A Di Đà Phật (Giai Điệu Dịu Êm An Lạc)",
+      "filePath": "/uploads/audio/niem-nam-mo-a-di-da-phat-diu-em.mp3",
+      "enabled": true
+    },
+    {
+      "id": "track_niem_phat_vang_sanh",
+      "title": "Niệm Phật Vãng Sanh - Thầy Thích Thông Lai",
+      "filePath": "/uploads/audio/niem-phat-vang-sanh-thich-thong-lai.mp3",
+      "enabled": true
+    },
+    {
+      "id": "track_chu_dai_bi",
+      "title": "Kinh Chú Đại Bi - Thầy Thích Trí Thoát",
+      "filePath": "/uploads/audio/chu-dai-bi-thich-tri-thoat.mp3",
+      "enabled": true
+    },
+    {
+      "id": "track_nhac_thien",
+      "title": "Nhạc Thiền - Tĩnh Tâm - An Nhiên Tự Tại",
+      "filePath": "/uploads/audio/nhac-thien-tinh-tam-an-nhien-tu-tai.mp3",
+      "enabled": true
+    }
+  ],
+  "topDonors": [],
+  "metrics": {
+    "totalLikes": 0,
+    "totalGifts": 0,
+    "totalGiftValue": 0,
+    "anonymousLikes": 0,
+    "lastGiftAt": null
+  },
+  "meta": {
+    "createdAt": "2026-11-10T00:00:00.000Z",
+    "updatedAt": "2026-11-10T00:00:00.000Z"
+  },
+  "selectedTrackId": "track_niem_phat"
+}
