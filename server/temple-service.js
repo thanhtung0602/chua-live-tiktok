@@ -279,10 +279,21 @@ export class TempleService {
     const viewer = asViewer(event);
     const prevLikes = this.data.metrics.totalLikes || 0;
     await this.changeData((state) => {
-      state.metrics.totalLikes += count;
+      if (event?.total && Number(event.total) > state.metrics.totalLikes) {
+        state.metrics.totalLikes = Number(event.total);
+      } else {
+        state.metrics.totalLikes += count;
+      }
       if (!viewer) state.metrics.anonymousLikes += count;
     });
     const newLikes = this.data.metrics.totalLikes || 0;
+
+    // Phát sự kiện xung tim (like:pulse) để client cập nhật tức thì
+    this.io.emit('like:pulse', {
+      count,
+      totalLikes: newLikes,
+      viewer: viewer ? { id: viewer.id, username: viewer.username, nickname: viewer.nickname } : null
+    });
 
     // Kiểm tra mốc 1000 tim thỉnh Đại Hồng Chung
     const prevMilestone = Math.floor(prevLikes / 1000);
@@ -301,6 +312,46 @@ export class TempleService {
     const presence = this.upsertPresence(viewer);
     this.emitMetrics();
     return { anonymous: false, created: !existing && Boolean(presence), capacityReached: !presence };
+  }
+
+  async handleFollow(event) {
+    const viewer = asViewer(event);
+    if (!viewer) return { ignored: true, reason: 'anonymous-follow' };
+
+    const existing = this.presences.get(viewer.id);
+    let admitted = null;
+    if (existing) {
+      existing.lastActiveAt = now();
+      admitted = existing;
+    } else {
+      admitted = this.upsertPresence(viewer);
+    }
+
+    // Phát lời cảm ơn và chúc phúc AI trang nghiêm
+    const speech = this.speechDirector ? this.speechDirector.getFollowSpeech(viewer) : null;
+    if (speech && speech.text) {
+      this.io.emit('speech:announce', {
+        id: `speech-follow-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        type: 'follow',
+        speaker: viewer.nickname || viewer.username,
+        text: speech.text,
+        url: `/api/tts?text=${encodeURIComponent(speech.text)}`
+      });
+    }
+
+    this.io.emit('follower:new', {
+      viewer: admitted ? asPublicPresence(admitted) : { id: viewer.id, username: viewer.username, nickname: viewer.nickname },
+      speechText: speech?.text || ''
+    });
+
+    this.emitMetrics();
+
+    return {
+      followed: true,
+      viewer,
+      presence: admitted ? asPublicPresence(admitted) : null,
+      speech
+    };
   }
 
   async handleComment(event) {
@@ -777,6 +828,7 @@ export class TempleService {
     if (event.type === 'like') return this.handleLike(event);
     if (event.type === 'gift') return this.handleGift(event);
     if (event.type === 'comment') return this.handleComment(event);
+    if (event.type === 'follow') return this.handleFollow(event);
     if (event.type === 'leave') return this.handleLeave(event);
     if (event.type === 'fortune') return this.drawFortune(asViewer(event));
     throw new Error('Loại sự kiện không được hỗ trợ.');

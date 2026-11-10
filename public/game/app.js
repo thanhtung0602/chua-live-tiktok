@@ -126,17 +126,21 @@ const ui = {
     }).join('');
   },
   updateMetrics(metrics = {}) {
-    this.likes.textContent = compactNumber.format(metrics.totalLikes || 0);
-    this.people.textContent = compactNumber.format(metrics.presentCount || 0);
-    this.gifts.textContent = compactNumber.format(metrics.totalGifts || 0);
-    this.likes.title = fullNumber.format(metrics.totalLikes || 0);
-    this.gifts.title = fullNumber.format(metrics.totalGifts || 0);
+    if (this.likes) {
+      this.likes.textContent = compactNumber.format(metrics.totalLikes || 0);
+      this.likes.title = fullNumber.format(metrics.totalLikes || 0);
+    }
+    if (this.people) this.people.textContent = compactNumber.format(metrics.presentCount || 0);
+    if (this.gifts) {
+      this.gifts.textContent = compactNumber.format(metrics.totalGifts || 0);
+      this.gifts.title = fullNumber.format(metrics.totalGifts || 0);
+    }
 
     const bellLikes = metrics.bellCycleLikes ?? ((metrics.totalLikes || 0) % 1000);
     if (this.bellCount) this.bellCount.textContent = fullNumber.format(bellLikes);
     if (this.bellFill) {
-      const pct = Math.min(100, Math.round((bellLikes / 1000) * 100));
-      this.bellFill.style.width = `${pct}%`;
+      const pct = Math.min(100, Math.max(0, (bellLikes / 1000) * 100));
+      this.bellFill.style.width = `${pct.toFixed(1)}%`;
     }
     if (this.ceremonyAttendees) this.ceremonyAttendees.textContent = metrics.presentCount || 0;
   },
@@ -224,14 +228,15 @@ const ui = {
   showSpeech(payload) {
     if (!this.speechBubble || !payload?.text) return;
     const isGift = payload.type === 'gift_thanks';
+    const isFollow = payload.type === 'follow';
     const isAmbient = payload.type === 'ambient_blessing';
     const isFortune = payload.type === 'fortune';
-    this.speechBubble.classList.toggle('mode-gift', isGift);
+    this.speechBubble.classList.toggle('mode-gift', isGift || isFollow);
     this.speechBubble.classList.toggle('mode-fortune', isFortune);
-    this.speechBubble.classList.toggle('mode-welcome', !isGift && !isAmbient && !isFortune);
+    this.speechBubble.classList.toggle('mode-welcome', !isGift && !isFollow && !isAmbient && !isFortune);
     this.speechBubble.classList.toggle('mode-ambient', isAmbient);
-    if (this.speechIcon) this.speechIcon.textContent = isFortune ? '🎋' : isGift ? '🪷' : isAmbient ? '🙏' : '🎙️';
-    if (this.speechKicker) this.speechKicker.textContent = isFortune ? `QUẺ XĂM QUÁN ÂM · ${payload.speaker || 'LỜI QUẺ'}` : isGift ? 'TRI ÂN CÔNG ĐỨC' : isAmbient ? 'KHUYẾN TẤN AN LẠC' : 'LỜI CHÙA';
+    if (this.speechIcon) this.speechIcon.textContent = isFortune ? '🎋' : (isGift || isFollow) ? '🪷' : isAmbient ? '🙏' : '🎙️';
+    if (this.speechKicker) this.speechKicker.textContent = isFortune ? `QUẺ XĂM QUÁN ÂM · ${payload.speaker || 'LỜI QUẺ'}` : isFollow ? `TRI ÂN THEO DÕI · ${payload.speaker || 'ĐẠO HỮU'}` : isGift ? 'TRI ÂN CÔNG ĐỨC' : isAmbient ? 'KHUYẾN TẤN AN LẠC' : 'LỜI CHÙA';
     if (this.speechContent) this.speechContent.textContent = payload.text;
     this.speechBubble.setAttribute('aria-hidden', 'false');
     this.speechBubble.classList.add('is-speaking');
@@ -352,11 +357,12 @@ class AiVoiceDirector {
     if (this.settings.enabled === false) return;
     if (payload.type === 'welcome' && this.settings.welcomeEnabled === false) return;
     if (payload.type === 'gift_thanks' && this.settings.giftThanksEnabled === false) return;
+    if (payload.type === 'follow' && this.settings.followEnabled === false) return;
 
-    const isGift = payload.type === 'gift_thanks';
+    const isPriority = payload.type === 'gift_thanks' || payload.type === 'follow' || payload.type === 'fortune';
     const now = Date.now();
 
-    if (!isGift) {
+    if (!isPriority) {
       // Cooldown 5s cho lời chào để tránh spam khi bão tim
       if (now - this.lastWelcomeAt < 5000 && this.isSpeaking) {
         const existingIdx = this.queue.findIndex(item => item.type === 'welcome');
@@ -370,7 +376,7 @@ class AiVoiceDirector {
       this.lastWelcomeAt = now;
     }
 
-    if (isGift) {
+    if (isPriority) {
       this.queue.unshift(payload);
     } else {
       this.queue.push(payload);
@@ -1320,6 +1326,32 @@ class TempleScene extends Phaser.Scene {
     });
   }
 
+  spawnFloatingHeart(count = 1) {
+    const burst = Math.min(Math.max(1, count), 5);
+    const icons = ['❤️', '💖', '🪷', '✨', '💛'];
+    for (let i = 0; i < burst; i++) {
+      this.time.delayedCall(i * 90, () => {
+        const icon = icons[Math.floor(Math.random() * icons.length)];
+        const x = 320 + Math.random() * 440;
+        const y = 1720 + Math.random() * 80;
+        const heart = this.add.text(x, y, icon, {
+          fontSize: `${22 + Math.random() * 12}px`
+        }).setOrigin(0.5).setDepth(2050).setAlpha(0.9);
+
+        this.tweens.add({
+          targets: heart,
+          y: y - 240 - Math.random() * 120,
+          x: x + (Math.random() - 0.5) * 60,
+          alpha: 0,
+          scale: 1.35,
+          duration: 1600 + Math.random() * 500,
+          ease: 'Quad.out',
+          onComplete: () => heart.destroy()
+        });
+      });
+    }
+  }
+
   performCeremony() {
     // Toàn bộ Phật tử trong chùa quỳ lạy trang nghiêm 3 lạy
     this.worshippers.forEach((w) => {
@@ -1449,6 +1481,20 @@ liveSocket.on('temple:presence:upsert', (presence) => sceneOrQueue((scene) => sc
 liveSocket.on('temple:presence:remove', ({ id }) => sceneOrQueue((scene) => scene.removePresence(id)));
 liveSocket.on('leaderboard:update', (donors) => ui.updateLeaderboard(donors));
 liveSocket.on('metrics:update', (metrics) => ui.updateMetrics(metrics));
+liveSocket.on('like:pulse', (payload) => {
+  if (payload?.totalLikes) {
+    const bellLikes = (payload.totalLikes % 1000);
+    if (ui.bellCount) ui.bellCount.textContent = fullNumber.format(bellLikes);
+    if (ui.bellFill) {
+      const pct = Math.min(100, Math.max(0, (bellLikes / 1000) * 100));
+      ui.bellFill.style.width = `${pct.toFixed(1)}%`;
+    }
+  }
+  sceneOrQueue((scene) => scene.spawnFloatingHeart(payload?.count || 1));
+});
+liveSocket.on('follower:new', (payload) => {
+  sceneOrQueue((scene) => scene.spawnFloatingHeart(3));
+});
 liveSocket.on('live:status', (live) => ui.updateLive(live));
 liveSocket.on('audio:state', (audio) => audioDirector.apply(audio));
 liveSocket.on('settings:update', (settings) => aiVoiceDirector.applySettings(settings));

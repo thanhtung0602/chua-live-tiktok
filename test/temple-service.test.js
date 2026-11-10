@@ -427,3 +427,54 @@ test('tính năng gieo quẻ khi bình luận gieo quẻ hoặc xin quẻ phát 
 
   temple.destroy();
 });
+
+test('sự kiện follow tự động đưa người vào phòng và phát âm thanh AI cảm ơn chúc phúc', async () => {
+  const io = makeIo();
+  const temple = new TempleService({ store: makeStore(), io });
+
+  const followRes = await temple.handleEvent({
+    type: 'follow',
+    viewer: { id: 'follower_1', username: 'thien_an', nickname: 'Thiện An', avatarUrl: 'https://example.com/avatar.jpg' }
+  });
+
+  assert.equal(followRes.followed, true);
+  assert.ok(followRes.presence);
+  assert.equal(followRes.presence.username, 'thien_an');
+  assert.ok(temple.presences.has('follower_1'));
+
+  // Kiểm tra speech:announce
+  const speech = io.events.find((e) => e.name === 'speech:announce' && e.payload.type === 'follow');
+  assert.ok(speech);
+  assert.ok(speech.payload.text.includes('Thiện An'));
+  assert.ok(speech.payload.text.includes('theo dõi'));
+
+  // Kiểm tra follower:new
+  const followerEvent = io.events.find((e) => e.name === 'follower:new');
+  assert.ok(followerEvent);
+  assert.equal(followerEvent.payload.viewer.nickname, 'Thiện An');
+
+  temple.destroy();
+});
+
+test('sự kiện like đồng bộ totalLikes với số tim thực tế từ TikTok và phát like:pulse', async () => {
+  const io = makeIo();
+  const temple = new TempleService({ store: makeStore(), io });
+
+  await temple.handleEvent({
+    type: 'like',
+    count: 10,
+    total: 3500,
+    viewer: { id: 'liker_1', username: 'van_phuc', nickname: 'Vạn Phúc' }
+  });
+
+  const snapshot = temple.snapshot();
+  assert.equal(snapshot.metrics.totalLikes, 3500);
+  assert.equal(snapshot.metrics.bellCycleLikes, 500);
+
+  const pulse = io.events.find((e) => e.name === 'like:pulse');
+  assert.ok(pulse);
+  assert.equal(pulse.payload.count, 10);
+  assert.equal(pulse.payload.totalLikes, 3500);
+
+  temple.destroy();
+});

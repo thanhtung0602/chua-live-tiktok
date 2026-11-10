@@ -81,6 +81,11 @@ test('LiveProvider: ingest sự kiện hợp lệ và từ chối sự kiện kh
   assert.equal(events.length, 4);
   assert.equal(events[3].type, 'leave');
 
+  const rFollow = await provider.ingest({ type: 'follow', viewer: { id: 'u2', username: 'user2' } });
+  assert.equal(rFollow.processed, true);
+  assert.equal(events.length, 5);
+  assert.equal(events[4].type, 'follow');
+
   // Invalid event
   await assert.rejects(async () => {
     await provider.ingest({ type: 'unknown_type' });

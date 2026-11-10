@@ -125,6 +125,24 @@ export const AMBIENT_TEMPLATES = [
 ];
 
 /**
+ * 12 mẫu lời cảm ơn và chúc phúc trang nghiêm, ấm áp khi có người bấm theo dõi (Follow) kênh
+ */
+export const FOLLOW_TEMPLATES = [
+  'A Di Đà Phật! Tri ân đạo hữu {name} đã bấm theo dõi kênh Chùa Online. Kính chúc đạo hữu thân tâm thường an lạc, vạn sự hanh thông, phúc đức vô lượng.',
+  'Hoan hỷ đón nhận duyên lành từ bạn {name} đã theo dõi kênh. Cầu chúc cho bạn cùng gia đình luôn được mười phương chư Phật gia hộ bình an, hạnh phúc.',
+  'Cảm ơn bạn {name} đã phát tâm theo dõi đạo tràng. Nguyện ánh sáng từ bi luôn soi đường dẫn lối cho bạn trên mọi nẻo đường đời.',
+  'A Di Đà Phật! Cảm tạ thiện hữu {name} đã kết duyên theo dõi kênh. Kính chúc bạn một đời an nhiên, tâm an vạn sự an, sở cầu như ý.',
+  'Tri ân bạn {name} đã bấm theo dõi chốn thiền môn. Chúc bạn luôn dồi dào sức khỏe, công việc thuận lợi, gia đạo êm ấm cát tường.',
+  'A Di Đà Phật! Đạo tràng vô cùng hoan hỷ khi bạn {name} gieo duyên theo dõi. Cầu mong phước lành, may mắn và tài lộc luôn đồng hành cùng bạn.',
+  'Kính tri ân công đức bạn {name} đã theo dõi kênh. Nguyện chúc cho bạn bồ đề tâm kiên cố, mọi âu lo phiền muộn đều hóa thành an yên.',
+  'A Di Đà Phật! Cảm ơn người bạn thiện lành {name} đã theo dõi kênh. Chúc bạn mỗi ngày trôi qua đều ngập tràn niềm vui, an vui tự tại.',
+  'Hoan hỷ chào đón bạn {name} đã đồng hành cùng kênh Chùa Online. Nguyện chúc cho bạn vạn dặm bình an, phúc lộc đủ đầy.',
+  'A Di Đà Phật! Cảm ơn bạn {name} đã kết duyên cùng đạo tràng. Kính chúc bạn và người thân tai qua nạn khỏi, muôn việc cát tường hanh thông.',
+  'Tri ân tấm lòng hướng Phật của bạn {name} qua nút theo dõi. Chúc bạn tâm luôn sáng suốt, gặp nhiều thiện duyên và quý nhân tương trợ.',
+  'A Di Đà Phật! Cảm ơn bạn {name} đã đồng hành. Nguyện nguồn năng lượng từ bi và bình an lan tỏa sâu rộng trong cuộc sống của bạn.'
+];
+
+/**
  * Trình quản lý lời nói AI với bộ nhớ xoay vòng chống lặp lại câu nói
  */
 export class SpeechDirector {
@@ -132,6 +150,7 @@ export class SpeechDirector {
     this.recentWelcomeIndices = [];
     this.recentGiftIndices = new Map();
     this.recentAmbientIndices = [];
+    this.recentFollowIndices = [];
   }
 
   /**
@@ -280,6 +299,45 @@ export class SpeechDirector {
       type: 'ambient_blessing',
       index: chosenIndex,
       text: AMBIENT_TEMPLATES[chosenIndex]
+    };
+  }
+
+  /**
+   * Chọn lời cảm ơn và chúc phúc ngẫu nhiên khi có người follow kênh, chống lặp
+   */
+  getFollowSpeech(viewer = {}) {
+    const name = clean(viewer.nickname || viewer.username || 'thiện hữu', 80);
+    const total = FOLLOW_TEMPLATES.length;
+    const historyLimit = Math.min(total - 1, 6);
+
+    let candidateIndices = [];
+    for (let i = 0; i < total; i++) {
+      if (!this.recentFollowIndices.includes(i)) {
+        candidateIndices.push(i);
+      }
+    }
+    if (candidateIndices.length === 0) {
+      candidateIndices = Array.from({ length: total }, (_, i) => i);
+      this.recentFollowIndices = [];
+    }
+
+    const chosenIndex = candidateIndices[Math.floor(Math.random() * candidateIndices.length)];
+    this.recentFollowIndices.push(chosenIndex);
+    if (this.recentFollowIndices.length > historyLimit) {
+      this.recentFollowIndices.shift();
+    }
+
+    const template = FOLLOW_TEMPLATES[chosenIndex];
+    const text = template
+      .replaceAll('{name}', name)
+      .replaceAll('{username}', viewer.username || name)
+      .replaceAll('{nickname}', viewer.nickname || name);
+
+    return {
+      type: 'follow',
+      index: chosenIndex,
+      text,
+      name
     };
   }
 }

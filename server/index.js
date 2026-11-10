@@ -187,6 +187,8 @@ app.post('/api/admin/speech/test', requireAdmin, (request, response) => {
     speech = temple.speechDirector.getGiftThankYouSpeech({ nickname: speaker }, { name: giftName }, 1);
   } else if (type === 'ambient') {
     speech = temple.speechDirector.getAmbientSpeech();
+  } else if (type === 'follow') {
+    speech = temple.speechDirector.getFollowSpeech({ nickname: speaker });
   } else {
     speech = temple.speechDirector.getWelcomeSpeech({ nickname: speaker });
   }

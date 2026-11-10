@@ -1,5 +1,26 @@
 import { TikTokLiveConnection } from 'tiktok-live-connector';
 
+function extractViewer(data = {}) {
+  const user = data.user || {};
+  const id = data.userId || user.idStr || user.id || data.uniqueId || user.displayId || user.uniqueId;
+  const username = data.uniqueId || user.displayId || user.uniqueId || data.username || (id ? `user_${String(id).slice(-4)}` : '');
+  const nickname = data.nickname || user.nickname || data.displayName || user.displayName || username || 'Thiện hữu';
+  const avatarUrl = data.profilePictureUrl
+    || user.avatarThumb?.urlList?.[0]
+    || user.avatarLarge?.urlList?.[0]
+    || user.avatarMedium?.urlList?.[0]
+    || data.userDetails?.profilePictureUrls?.[0]
+    || '';
+
+  if (!id && !username) return null;
+  return {
+    id: String(id || username),
+    username: String(username),
+    nickname: String(nickname),
+    avatarUrl: String(avatarUrl)
+  };
+}
+
 export class LiveProvider {
   constructor({ name = 'tiktok-connector', onEvent, onStatus, forwardUrl = process.env.FORWARD_TO_URL, webhookSecret = process.env.LIVE_WEBHOOK_SECRET }) {
     this.name = name;
@@ -81,13 +102,9 @@ export class LiveProvider {
 
       this.liveConnection.on('chat', (data) => {
         const comment = String(data.comment || data.content || '').trim();
-        const user = data.user || {};
-        const uid = data.uniqueId || user.displayId || user.uniqueId || user.id || 'viewer';
-        const nickname = data.nickname || user.nickname || uid;
-        const avatar = data.profilePictureUrl ||
-          (user.avatarThumb?.urlListList?.[0]) ||
-          (user.avatarMedium?.urlListList?.[0]) ||
-          (data.userDetails?.profilePictureUrls?.[0]) || '';
+        const viewer = extractViewer(data);
+        const uid = viewer?.username || 'viewer';
+        const nickname = viewer?.nickname || uid;
 
         console.log(`[TikTok LIVE Chat] 💬 @${uid} (${nickname}): "${comment}"`);
 
@@ -96,24 +113,15 @@ export class LiveProvider {
           eventId: `tt-chat-${data.msgId || Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
           data: {
             text: comment,
-            viewer: {
-              id: String(data.userId || user.id || uid),
-              username: String(uid),
-              nickname: String(nickname),
-              avatarUrl: String(avatar)
-            }
+            viewer: viewer || undefined
           }
         }).catch((err) => console.error('[LiveProvider] Lỗi xử lý comment:', err.message));
       });
 
       this.liveConnection.on('gift', (data) => {
-        const user = data.user || {};
-        const uid = data.uniqueId || user.displayId || user.uniqueId || user.id || 'viewer';
-        const nickname = data.nickname || user.nickname || uid;
-        const avatar = data.profilePictureUrl ||
-          (user.avatarThumb?.urlListList?.[0]) ||
-          (user.avatarMedium?.urlListList?.[0]) ||
-          (data.userDetails?.profilePictureUrls?.[0]) || '';
+        const viewer = extractViewer(data);
+        const uid = viewer?.username || 'viewer';
+        const nickname = viewer?.nickname || uid;
 
         const giftName = data.giftName || data.giftDetails?.giftName || 'Quà tặng';
         const giftId = data.giftId || giftName;
@@ -130,56 +138,67 @@ export class LiveProvider {
             giftName,
             repeatCount,
             giftImageUrl,
-            viewer: {
-              id: String(data.userId || user.id || uid),
-              username: String(uid),
-              nickname: String(nickname),
-              avatarUrl: String(avatar)
-            }
+            viewer: viewer || undefined
           }
         }).catch((err) => console.error('[LiveProvider] Lỗi xử lý gift:', err.message));
       });
 
       this.liveConnection.on('like', (data) => {
-        const user = data.user || {};
-        const uid = data.uniqueId || user.displayId || user.uniqueId || user.id || '';
-        const nickname = data.nickname || user.nickname || uid;
-        const avatar = data.profilePictureUrl || '';
-        const likeCount = Number(data.likeCount || 1);
+        const viewer = extractViewer(data);
+        const likeCount = Number(data.count || data.likeCount || 1);
+        const total = data.total ? Number(data.total) : (data.totalLikeCount ? Number(data.totalLikeCount) : undefined);
+
+        console.log(`[TikTok LIVE Like] ♥ ${viewer ? `@${viewer.username} (${viewer.nickname})` : 'Ẩn danh'} thả ${likeCount} tim (Mốc: ${total || 'N/A'})`);
 
         this.ingest({
           type: 'like',
           eventId: `tt-like-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
           data: {
             count: likeCount,
-            viewer: uid ? {
-              id: String(data.userId || user.id || uid),
-              username: String(uid),
-              nickname: String(nickname),
-              avatarUrl: String(avatar)
-            } : undefined
+            total,
+            viewer: viewer || undefined
           }
         }).catch((err) => console.error('[LiveProvider] Lỗi xử lý like:', err.message));
       });
 
+      this.liveConnection.on('follow', (data) => {
+        const viewer = extractViewer(data);
+        if (!viewer) return;
+        console.log(`[TikTok LIVE Follow] 🌸 @${viewer.username} (${viewer.nickname}) vừa bấm theo dõi kênh!`);
+
+        this.ingest({
+          type: 'follow',
+          eventId: `tt-follow-${data.msgId || Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+          data: {
+            viewer
+          }
+        }).catch((err) => console.error('[LiveProvider] Lỗi xử lý follow:', err.message));
+      });
+
+      this.liveConnection.on('social', (data) => {
+        const key = data.common?.displayText?.key || data.displayType || '';
+        if (typeof key === 'string' && key.toLowerCase().includes('follow')) {
+          const viewer = extractViewer(data);
+          if (!viewer) return;
+          console.log(`[TikTok LIVE Follow] 🌸 @${viewer.username} (${viewer.nickname}) vừa bấm theo dõi kênh!`);
+          this.ingest({
+            type: 'follow',
+            eventId: `tt-follow-${data.msgId || Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+            data: { viewer }
+          }).catch(() => {});
+        }
+      });
+
       this.liveConnection.on('member', (data) => {
-        const user = data.user || {};
-        const uid = data.uniqueId || user.displayId || user.uniqueId || user.id;
-        if (!uid) return;
-        const nickname = data.nickname || user.nickname || uid;
-        const avatar = data.profilePictureUrl || '';
+        const viewer = extractViewer(data);
+        if (!viewer) return;
 
         this.ingest({
           type: 'like',
           eventId: `tt-join-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
           data: {
             count: 1,
-            viewer: {
-              id: String(data.userId || user.id || uid),
-              username: String(uid),
-              nickname: String(nickname),
-              avatarUrl: String(avatar)
-            }
+            viewer
           }
         }).catch(() => {});
       });
@@ -263,7 +282,7 @@ export class LiveProvider {
 
     if (isLeave) {
       type = 'leave';
-    } else if (!['like', 'gift', 'comment', 'fortune'].includes(type)) {
+    } else if (!['like', 'gift', 'comment', 'fortune', 'follow'].includes(type)) {
       return null;
     }
 
@@ -284,6 +303,11 @@ export class LiveProvider {
 
     if (type === 'like') {
       normalized.count = Number(data.count || data.likeCount || data.likes || raw.count || 1);
+      if (data.total !== undefined || raw.total !== undefined) {
+        normalized.total = Number(data.total ?? raw.total);
+      }
+    } else if (type === 'follow') {
+      normalized.viewer = viewer;
     } else if (type === 'gift') {
       normalized.giftId = data.giftId || data.giftName || raw.giftId || raw.giftName;
       normalized.giftName = data.giftName || raw.giftName;
@@ -301,7 +325,7 @@ export class LiveProvider {
   async ingest(rawEvent) {
     const event = this.normalizeEvent(rawEvent);
     if (!event) {
-      throw new Error('Sự kiện LIVE không hợp lệ. Hỗ trợ: like, gift, comment, leave, fortune.');
+      throw new Error('Sự kiện LIVE không hợp lệ. Hỗ trợ: like, gift, comment, leave, fortune, follow.');
     }
     if (this.status !== 'connected' && this.name !== 'Mock simulator') {
       this.status = 'connected';
