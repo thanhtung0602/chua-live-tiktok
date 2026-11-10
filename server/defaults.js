@@ -35,39 +35,15 @@ export const defaultGifts = [
 
 export const defaultTracks = [
   {
-    id: 'track_niem_phat',
-    title: 'Niệm Phật - Nam Mô A Di Đà Phật',
-    filePath: '/uploads/audio/niem-nam-mo-a-di-da-phat.mp3',
+    id: 'track_tieng_mo_thanh_tinh',
+    title: 'Tiếng Mõ Chùa Tụng Niệm (Thanh Tịnh Không Bản Quyền)',
+    filePath: '/uploads/audio/tieng-mo-chua-thanh-tinh-an-lac.wav',
     enabled: true
   },
   {
-    id: 'track_niem_phat_thanh_tinh',
-    title: 'Niệm Nam Mô A Di Đà Phật (Thanh Tịnh Trầm Ấm)',
-    filePath: '/uploads/audio/niem-nam-mo-a-di-da-phat-thanh-tinh.mp3',
-    enabled: true
-  },
-  {
-    id: 'track_niem_phat_diu_em',
-    title: 'Niệm Nam Mô A Di Đà Phật (Giai Điệu Dịu Êm An Lạc)',
-    filePath: '/uploads/audio/niem-nam-mo-a-di-da-phat-diu-em.mp3',
-    enabled: true
-  },
-  {
-    id: 'track_niem_phat_vang_sanh',
-    title: 'Niệm Phật Vãng Sanh - Thầy Thích Thông Lai',
-    filePath: '/uploads/audio/niem-phat-vang-sanh-thich-thong-lai.mp3',
-    enabled: true
-  },
-  {
-    id: 'track_chu_dai_bi',
-    title: 'Kinh Chú Đại Bi - Thầy Thích Trí Thoát',
-    filePath: '/uploads/audio/chu-dai-bi-thich-tri-thoat.mp3',
-    enabled: true
-  },
-  {
-    id: 'track_nhac_thien',
-    title: 'Nhạc Thiền - Tĩnh Tâm - An Nhiên Tự Tại',
-    filePath: '/uploads/audio/nhac-thien-tinh-tam-an-nhien-tu-tai.mp3',
+    id: 'track_chuong_bat_nha_suoi_thien',
+    title: 'Chuông Bát Nhã & Suối Rừng Thiền (An Lạc Không Bản Quyền)',
+    filePath: '/uploads/audio/chuong-bat-nha-va-suoi-thien.wav',
     enabled: true
   }
 ];
