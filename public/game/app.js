@@ -1428,6 +1428,10 @@ class WorshipperManager {
     this.people = new Map();
   }
 
+  forEach(callback) {
+    this.people.forEach(callback);
+  }
+
   upsert(data, snapshot = false) {
     let person = this.people.get(data.id);
     if (!person) {

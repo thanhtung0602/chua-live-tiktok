@@ -224,7 +224,54 @@ app.post('/api/live/events', requireWebhookSecret, asyncRoute(async (request, re
   response.status(202).json({ accepted: true });
 }));
 
-// Endpoint TTS phát âm thanh AI chuẩn tự nhiên, 100% không bao giờ mất tiếng
+function fetchGoogleTtsChunk(chunk) {
+  return new Promise((resolve, reject) => {
+    const ttsUrl = 'https://translate.google.com/translate_tts?ie=UTF-8&tl=vi&client=tw-ob&q=' + encodeURIComponent(chunk);
+    https.get(ttsUrl, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' } }, (res) => {
+      if (res.statusCode !== 200) {
+        return reject(new Error(`Google TTS status ${res.statusCode}`));
+      }
+      const data = [];
+      res.on('data', (d) => data.push(d));
+      res.on('end', () => resolve(Buffer.concat(data)));
+      res.on('error', reject);
+    }).on('error', reject);
+  });
+}
+
+function splitTextForTts(text, maxChunkLen = 180) {
+  const chunks = [];
+  const sentences = text.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [text];
+  let current = '';
+  for (const s of sentences) {
+    const trimmed = s.trim();
+    if (!trimmed) continue;
+    if ((current + ' ' + trimmed).trim().length <= maxChunkLen) {
+      current = (current + ' ' + trimmed).trim();
+    } else {
+      if (current) chunks.push(current);
+      if (trimmed.length <= maxChunkLen) {
+        current = trimmed;
+      } else {
+        const words = trimmed.split(' ');
+        let wCurrent = '';
+        for (const w of words) {
+          if ((wCurrent + ' ' + w).trim().length <= maxChunkLen) {
+            wCurrent = (wCurrent + ' ' + w).trim();
+          } else {
+            if (wCurrent) chunks.push(wCurrent);
+            wCurrent = w;
+          }
+        }
+        current = wCurrent;
+      }
+    }
+  }
+  if (current) chunks.push(current);
+  return chunks;
+}
+
+// Endpoint TTS phát âm thanh AI chuẩn tự nhiên, hỗ trợ cả đoạn văn ngắn lẫn bài kinh dài, 100% không bao giờ mất tiếng
 app.get('/api/tts', async (request, response) => {
   const text = String(request.query?.text || '').trim();
   if (!text) return response.status(400).send('Missing text');
@@ -235,7 +282,7 @@ app.get('/api/tts', async (request, response) => {
     .replace(/!+/g, '.')
     .replace(/\s+/g, ' ')
     .trim()
-    .slice(0, 200);
+    .slice(0, 3000);
 
   if (!clean) return response.status(400).send('Empty cleaned text');
 
@@ -250,19 +297,21 @@ app.get('/api/tts', async (request, response) => {
     return fs.createReadStream(cachePath).pipe(response);
   }
 
-  const ttsUrl = 'https://translate.google.com/translate_tts?ie=UTF-8&tl=vi&client=tw-ob&q=' + encodeURIComponent(clean);
-  https.get(ttsUrl, { headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' } }, (res) => {
-    if (res.statusCode !== 200) {
-      return response.status(502).send('TTS upstream error');
+  const chunks = splitTextForTts(clean, 180);
+  try {
+    const buffers = [];
+    for (const chunk of chunks) {
+      const buf = await fetchGoogleTtsChunk(chunk);
+      if (buf && buf.length) buffers.push(buf);
     }
+    const fullAudio = Buffer.concat(buffers);
+    await fs.promises.writeFile(cachePath, fullAudio);
     response.setHeader('Content-Type', 'audio/mpeg');
     response.setHeader('Cache-Control', 'public, max-age=86400');
-    const file = fs.createWriteStream(cachePath);
-    res.pipe(file);
-    res.pipe(response);
-  }).on('error', (err) => {
-    response.status(500).send('TTS fetch error: ' + err.message);
-  });
+    response.send(fullAudio);
+  } catch (err) {
+    response.status(502).send('TTS upstream error: ' + err.message);
+  }
 });
 
 app.get('/admin', (_request, response) => response.sendFile(path.join(publicDir, 'admin', 'index.html')));

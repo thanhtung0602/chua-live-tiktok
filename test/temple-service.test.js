@@ -368,6 +368,12 @@ test('Lễ Hồi Hướng: kích hoạt nghi lễ và cập nhật trạng thái
   const startEvent = io.events.find(e => e.name === 'ceremony:start');
   assert.ok(startEvent);
   assert.equal(startEvent.payload.title, 'ĐẠI LỄ HỒI HƯỚNG CÔNG ĐỨC');
+  assert.ok(startEvent.payload.chant.includes('Nam mô A Di Đà Phật'));
+
+  const speechEvt = io.events.find(e => e.name === 'speech:announce' && e.payload.type === 'ceremony');
+  assert.ok(speechEvt);
+  assert.ok(speechEvt.payload.text.includes('hồi hướng công đức'));
+  assert.ok(speechEvt.payload.url.includes('/api/tts'));
 
   temple.destroy();
 });

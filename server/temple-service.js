@@ -44,6 +44,18 @@ function formatThankYou(template, sender, gift) {
     .replaceAll('{gift}', gift.name || 'một món quà');
 }
 
+export const DEDICATION_PRAYER_TEXT = `Nam mô A Di Đà Phật.
+Nam mô A Di Đà Phật.
+Nam mô A Di Đà Phật.
+
+Nguyện mười phương chư Phật, chư đại Bồ Tát, chư A La Hán, chư Hiền Thánh Tăng, chư Long Thần Hộ Pháp, đức Dược Sư Lưu Ly Quang Vương Phật, đức Bồ Tát Quán Thế Âm, đức Quan Thánh Đế Quân chứng minh, gia trì và cùng với con hồi hướng công đức, phước báu từ vô lượng kiếp con đã gieo tạo được do niệm Phật, lạy Phật, trì Chú, giúp đỡ, cứu mạng chúng sinh cho đến bây giờ. Xin hồi hướng hết cho oan gia trái chủ, nghiệp chướng trong thân tâm, cho cửu huyền thất tổ bảy đời, chín kiếp nội, ngoại đầy đủ công đức, phước báu siêu sinh về cõi an lành, Tây Phương Tịnh Độ. Và hồi hướng cho con cùng những người thân quen bình an, mạnh khỏe, khai thông trí tuệ, phát tâm bồ đề, ăn chay, niệm Phật, tu hành tinh tấn đắc quả thành Phật. Nguyện hồi hướng cho pháp giới chúng sanh đồng thành Phật đạo.
+
+Nam mô A Di Đà Phật.
+Nam mô A Di Đà Phật.
+Nam mô A Di Đà Phật.`;
+
+export const DEDICATION_PRAYER_SPOKEN = `Nam mô A Di Đà Phật. Nam mô A Di Đà Phật. Nam mô A Di Đà Phật. Nguyện mười phương chư Phật, chư đại Bồ Tát, chư A La Hán, chư Hiền Thánh Tăng, chư Long Thần Hộ Pháp, đức Dược Sư Lưu Ly Quang Vương Phật, đức Bồ Tát Quán Thế Âm, đức Quan Thánh Đế Quân chứng minh, gia trì và cùng với con hồi hướng công đức, phước báu từ vô lượng kiếp con đã gieo tạo được do niệm Phật, lạy Phật, trì Chú, giúp đỡ, cứu mạng chúng sinh cho đến bây giờ. Xin hồi hướng hết cho oan gia trái chủ, nghiệp chướng trong thân tâm, cho cửu huyền thất tổ bảy đời, chín kiếp nội, ngoại đầy đủ công đức, phước báu siêu sinh về cõi an lành, Tây Phương Tịnh Độ. Và hồi hướng cho con cùng những người thân quen bình an, mạnh khỏe, khai thông trí tuệ, phát tâm bồ đề, ăn chay, niệm Phật, tu hành tinh tấn đắc quả thành Phật. Nguyện hồi hướng cho pháp giới chúng sanh đồng thành Phật đạo. Nam mô A Di Đà Phật. Nam mô A Di Đà Phật. Nam mô A Di Đà Phật.`;
+
 export class TempleService {
   constructor({ store, io }) {
     this.store = store;
@@ -63,7 +75,7 @@ export class TempleService {
     // Mốc 1000 tim thỉnh Đại Hồng Chung & Lễ Hồi Hướng mỗi 10 phút
     this.bellMilestone = 1000;
     this.ceremonyIntervalMs = 10 * 60 * 1000; // 10 phút
-    this.ceremonyDurationMs = 16000;          // 16 giây khóa lễ
+    this.ceremonyDurationMs = 55000;          // 55 giây khóa lễ hồi hướng toàn thể
     this.nextCeremonyAt = Date.now() + this.ceremonyIntervalMs;
     this.ceremonyActive = false;
     this.ceremonyTimer = setInterval(() => this.checkCeremony(), 1000);
@@ -102,15 +114,16 @@ export class TempleService {
       durationMs: this.ceremonyDurationMs,
       attendees,
       title: 'ĐẠI LỄ HỒI HƯỚNG CÔNG ĐỨC',
+      chant: DEDICATION_PRAYER_TEXT,
       soundUrl: '/assets/temple_bell.wav'
     });
 
-    const chant = 'Nguyện đem công đức này, hướng về khắp tất cả. Đệ tử và chúng sinh, đều trọn thành Phật đạo. Nam mô A Di Đà Phật!';
     this.io.emit('speech:announce', {
       id: randomUUID(),
       type: 'ceremony',
-      text: `A Di Đà Phật! Đã đến giờ trang nghiêm khóa lễ hồi hướng. ${chant}`,
-      speaker: 'Khóa Lễ Hồi Hướng',
+      text: DEDICATION_PRAYER_SPOKEN,
+      speaker: 'Đại Lễ Hồi Hướng',
+      url: `/api/tts?text=${encodeURIComponent(DEDICATION_PRAYER_SPOKEN)}`,
       createdAt: now()
     });
 
