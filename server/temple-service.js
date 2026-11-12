@@ -376,10 +376,28 @@ export class TempleService {
     const viewer = asViewer(event);
     const text = clean(event?.text || event?.comment, 500);
     if (!viewer) return { ignored: true, reason: 'anonymous-comment' };
-    const presence = this.presences.get(viewer.id);
+    let presence = this.presences.get(viewer.id);
     if (presence) presence.lastActiveAt = now();
 
-    // Phát sự kiện tin nhắn hiển thị trong Khung Chat Trực Tiếp trên màn hình
+    // 1. Kiểm tra từ khóa rời chùa
+    const normalized = text.toLocaleLowerCase('vi-VN').trim();
+    const leaves = (this.data.settings.leaveKeywords || []).some((keyword) => {
+      const needle = clean(keyword, 80).toLocaleLowerCase('vi-VN');
+      return needle && normalized.includes(needle);
+    });
+    if (leaves && presence) {
+      this.leavePresence(viewer.id, 'comment');
+      return { left: true };
+    }
+
+    // 2. Tự động đưa Phật tử vào phòng hoặc kích hoạt bồ đoàn
+    const existing = Boolean(presence);
+    if (!presence) {
+      presence = this.upsertPresence(viewer);
+    }
+    this.emitMetrics();
+
+    // 3. Phát sự kiện tin nhắn hiển thị bong bóng chat trên đầu nhân vật
     const chatPayload = {
       id: randomUUID(),
       eventId: clean(event?.eventId || event?.id, 128),
@@ -397,39 +415,23 @@ export class TempleService {
     if (this.recentChats.length > 50) this.recentChats.shift();
     this.io.emit('chat:message', chatPayload);
 
-    // 1. Kiểm tra yêu cầu dâng hương (khi bình luận chứa 'dâng hương', 'thắp hương', ...)
+    // 4. Kiểm tra yêu cầu dâng hương (khi bình luận chứa 'dâng hương', 'thắp hương', ...)
     if (isIncenseRequest(text)) {
       const incense = await this.offerIncense(viewer);
       return { incense, left: false };
     }
 
-    // 2. Kiểm tra yêu cầu gieo quẻ xăm (khi bình luận chứa 'gieo quẻ', 'xin quẻ', ...)
+    // 5. Kiểm tra yêu cầu gieo quẻ xăm (khi bình luận chứa 'gieo quẻ', 'xin quẻ', ...)
     if (isFortuneRequest(text)) {
       const fortune = await this.drawFortune(viewer);
       return { fortune, left: false };
     }
 
-    // 3. Kiểm tra từ khóa rời chùa
-    const normalized = text.toLocaleLowerCase('vi-VN').trim();
-    const leaves = (this.data.settings.leaveKeywords || []).some((keyword) => {
-      const needle = clean(keyword, 80).toLocaleLowerCase('vi-VN');
-      return needle && normalized.includes(needle);
-    });
-    if (leaves && presence) {
-      this.leavePresence(viewer.id, 'comment');
-      return { left: true };
-    }
-
-    // 4. Tự động đưa Phật tử vào phòng khi phát hiện bất kỳ bình luận nào
-    const existing = this.presences.get(viewer.id);
-    const admitted = this.upsertPresence(viewer);
-    this.emitMetrics();
-
     return {
       left: false,
-      created: !existing && Boolean(admitted),
-      capacityReached: !admitted,
-      presence: admitted ? asPublicPresence(admitted) : null
+      created: !existing && Boolean(presence),
+      capacityReached: !presence,
+      presence: presence ? asPublicPresence(presence) : null
     };
   }
 

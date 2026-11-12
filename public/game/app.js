@@ -65,75 +65,8 @@ const ui = {
   giftName: $('#gift-name'),
   soundPrompt: $('#sound-prompt'),
   donorList: $('#donor-list'),
-  chatList: $('#chat-list'),
-  chatBody: $('#chat-body'),
-  chatBox: $('#live-chat-box'),
-  seenChatIds: new Set(),
-  appendChatMessage(chat) {
-    if (!this.chatList || !chat?.text) return;
-    const cid = chat.id || chat.eventId;
-    if (cid && this.seenChatIds.has(cid)) return;
-    if (cid) {
-      this.seenChatIds.add(cid);
-      if (this.seenChatIds.size > 200) this.seenChatIds.delete(this.seenChatIds.values().next().value);
-    }
-
-    const viewer = chat.viewer || {};
-    const name = viewer.nickname || viewer.username || 'Thiện hữu';
-    const avatarUrl = viewer.avatarUrl;
-
-    const li = document.createElement('li');
-    li.className = 'chat-item';
-
-    if (avatarUrl) {
-      const img = document.createElement('img');
-      img.className = 'chat-avatar';
-      img.src = avatarUrl;
-      img.alt = '';
-      img.onerror = () => {
-        img.remove();
-        const placeholder = document.createElement('span');
-        placeholder.className = 'chat-avatar-placeholder';
-        placeholder.textContent = '🪷';
-        li.prepend(placeholder);
-      };
-      li.appendChild(img);
-    } else {
-      const placeholder = document.createElement('span');
-      placeholder.className = 'chat-avatar-placeholder';
-      placeholder.textContent = '🪷';
-      li.appendChild(placeholder);
-    }
-
-    const content = document.createElement('div');
-    content.className = 'chat-content';
-
-    const userSpan = document.createElement('span');
-    userSpan.className = 'chat-user';
-    userSpan.textContent = name;
-
-    const textSpan = document.createElement('span');
-    textSpan.className = 'chat-text';
-    textSpan.textContent = chat.text;
-
-    content.appendChild(userSpan);
-    content.appendChild(textSpan);
-    li.appendChild(content);
-
-    this.chatList.appendChild(li);
-
-    while (this.chatList.children.length > 30) {
-      this.chatList.firstElementChild.remove();
-    }
-
-    if (this.chatBody) {
-      this.chatBody.scrollTop = this.chatBody.scrollHeight;
-    }
-  },
-  initChat(chats = []) {
-    if (!Array.isArray(chats) || !chats.length) return;
-    chats.forEach((c) => this.appendChatMessage(c));
-  },
+  appendChatMessage() {},
+  initChat() {},
   showBellMilestone(payload) {
     if (!this.bellBanner) return;
     if (this.bellBannerSub && payload?.milestone) {
@@ -1304,66 +1237,114 @@ class RealisticWorshipper {
    */
   showChatBubble(text) {
     if (!text || this.mode === 'exiting') return;
+
+    // Dọn dẹp bong bóng chat cũ nếu đang hiển thị
     if (this.chatBubbleContainer) {
+      if (this.chatFloatTween) this.chatFloatTween.remove();
+      if (this.chatExitTween) this.chatExitTween.remove();
       this.chatBubbleContainer.destroy(true);
       this.chatBubbleContainer = null;
     }
 
-    const cleanText = text.length > 32 ? `${text.slice(0, 31)}…` : text;
-    const bubble = this.scene.add.container(0, -170);
+    const cleanText = text.length > 70 ? `${text.slice(0, 68)}…` : text;
 
-    const txt = this.scene.add.text(0, 0, cleanText, {
+    // Xác định chiều cao đỉnh đầu nhân vật theo tư thế hiện tại
+    let headY = -275;
+    if (this.prostrating) {
+      headY = -210;
+    } else if (this.moving || this.mode === 'entering' || this.mode === 'standing') {
+      headY = -310;
+    }
+
+    // Tạo chữ bình luận
+    const txt = this.scene.add.text(0, -3, cleanText, {
       fontFamily: '"Be Vietnam Pro", "Segoe UI", Arial, sans-serif',
-      fontSize: '20px',
-      fontWeight: '600',
-      color: '#ffffff',
-      stroke: '#0e0711',
-      strokeThickness: 3,
-      align: 'center'
+      fontSize: '23px',
+      fontWeight: '700',
+      color: '#fffef2',
+      stroke: '#15061a',
+      strokeThickness: 3.5,
+      align: 'center',
+      lineSpacing: 4,
+      wordWrap: { width: 280, useAdvancedWrap: true }
     }).setOrigin(0.5);
 
-    const padX = 22;
-    const padY = 12;
-    const w = Math.max(80, txt.width + padX);
-    const h = txt.height + padY;
+    const padX = 28;
+    const padY = 16;
+    const w = Math.max(100, Math.min(330, txt.width + padX));
+    const h = Math.max(48, txt.height + padY);
 
+    // Vẽ khung bong bóng viền hoàng kim thiền môn trang nhã
     const bg = this.scene.add.graphics();
-    bg.fillStyle(0x130a17, 0.92);
-    bg.fillRoundedRect(-w / 2, -h / 2, w, h, 12);
-    bg.lineStyle(1.8, 0xf6cb65, 0.95);
-    bg.strokeRoundedRect(-w / 2, -h / 2, w, h, 12);
+    bg.fillStyle(0x15091c, 0.94);
+    bg.fillRoundedRect(-w / 2, -h / 2, w, h, 14);
+    bg.lineStyle(2.4, 0xf6cb65, 0.95);
+    bg.strokeRoundedRect(-w / 2, -h / 2, w, h, 14);
 
-    bg.fillStyle(0x130a17, 0.92);
-    bg.fillTriangle(0, h / 2 + 7, -5, h / 2 - 1, 5, h / 2 - 1);
-    bg.lineStyle(1.8, 0xf6cb65, 0.95);
-    bg.lineBetween(-5, h / 2 - 1, 0, h / 2 + 7);
-    bg.lineBetween(0, h / 2 + 7, 5, h / 2 - 1);
+    // Mũi nhọn (đuôi bong bóng thoại) chỉ thẳng xuống đầu nhân vật
+    bg.fillStyle(0x15091c, 0.94);
+    bg.fillTriangle(0, h / 2 + 11, -9, h / 2 - 1, 9, h / 2 - 1);
+    bg.lineStyle(2.4, 0xf6cb65, 0.95);
+    bg.lineBetween(-9, h / 2 - 1, 0, h / 2 + 11);
+    bg.lineBetween(0, h / 2 + 11, 9, h / 2 - 1);
+    bg.lineStyle(2.6, 0x15091c, 1);
+    bg.lineBetween(-7, h / 2, 7, h / 2);
 
+    // Tọa độ Y: Đuôi bong bóng (h/2 + 11) nằm cách đỉnh đầu khoảng 8px
+    const bubbleTargetY = headY - 19 - h / 2;
+    const bubble = this.scene.add.container(0, bubbleTargetY + 12);
     bubble.add([bg, txt]);
-    bubble.setScale(0.85).setAlpha(0);
+
+    // Bù tỷ lệ hiển thị để các hàng bồ đoàn phía sau chữ vẫn to rõ trên màn hình dọc
+    const targetScale = Math.min(1.30, Math.max(1.0, 0.88 / Math.max(0.5, this.container.scaleX)));
+    bubble.setScale(targetScale * 0.45).setAlpha(0);
+
     this.container.add(bubble);
     this.chatBubbleContainer = bubble;
 
+    // Nâng depth nhân vật lên cao tạm thời để bong bóng không bị người hàng dưới che
+    const originalDepth = this.container.y;
+    this.container.setDepth(originalDepth + 3500);
+
+    // Hiệu ứng xuất hiện nảy nhẹ (Back.out)
     this.scene.tweens.add({
       targets: bubble,
-      scale: 1,
+      scale: targetScale,
       alpha: 1,
-      y: -180,
-      duration: 220,
-      ease: 'Back.out'
+      y: bubbleTargetY,
+      duration: 260,
+      ease: 'Back.out',
+      onComplete: () => {
+        if (this.chatBubbleContainer === bubble) {
+          this.chatFloatTween = this.scene.tweens.add({
+            targets: bubble,
+            y: bubbleTargetY - 5,
+            duration: 1100,
+            yoyo: true,
+            repeat: -1,
+            ease: 'Sine.inOut'
+          });
+        }
+      }
     });
 
-    this.scene.time.delayedCall(4500, () => {
+    // Giữ bong bóng hiển thị trong 6.5s để người xem và chủ phòng đọc rõ
+    this.scene.time.delayedCall(6500, () => {
       if (this.chatBubbleContainer === bubble) {
-        this.scene.tweens.add({
+        if (this.chatFloatTween) this.chatFloatTween.remove();
+        this.chatExitTween = this.scene.tweens.add({
           targets: bubble,
           alpha: 0,
-          y: -195,
-          duration: 320,
+          y: bubbleTargetY - 22,
+          scale: targetScale * 0.85,
+          duration: 350,
           ease: 'Sine.in',
           onComplete: () => {
             bubble.destroy(true);
-            if (this.chatBubbleContainer === bubble) this.chatBubbleContainer = null;
+            if (this.chatBubbleContainer === bubble) {
+              this.chatBubbleContainer = null;
+              this.container.setDepth(this.moving ? this.container.y : (this.target ? this.target().y : this.container.y));
+            }
           }
         });
       }
@@ -1416,6 +1397,8 @@ class RealisticWorshipper {
   destroy() {
     this.stopPrayerCycle();
     if (this.walkTimer) this.walkTimer.remove(false);
+    if (this.chatFloatTween) this.chatFloatTween.remove();
+    if (this.chatExitTween) this.chatExitTween.remove();
     if (this.chatBubbleContainer) this.chatBubbleContainer.destroy(true);
     this.scene.tweens.killTweensOf(this.container);
     this.container.destroy(true);
@@ -1426,10 +1409,35 @@ class WorshipperManager {
   constructor(scene) {
     this.scene = scene;
     this.people = new Map();
+    this.pendingBubbles = new Map();
   }
 
   forEach(callback) {
     this.people.forEach(callback);
+  }
+
+  showChatBubble(viewerId, text) {
+    if (!text) return;
+    const person = this.people.get(viewerId);
+    if (person && typeof person.showChatBubble === 'function') {
+      person.showChatBubble(text);
+      return;
+    }
+
+    // Lưu vào hàng đợi nếu Phật tử đang vừa được khởi tạo / bước vào
+    this.pendingBubbles.set(viewerId, { text, time: Date.now() });
+
+    // Dự phòng: Nếu sau 1.2s không tìm thấy nhân vật chính chủ (ví dụ phòng đầy),
+    // hiển thị trên một Phật tử đang có mặt để lời chúc/bình luận không bị bỏ lỡ
+    this.scene.time.delayedCall(1200, () => {
+      if (this.pendingBubbles.has(viewerId)) {
+        this.pendingBubbles.delete(viewerId);
+        const anyPerson = [...this.people.values()].find((p) => p.mode !== 'exiting');
+        if (anyPerson && typeof anyPerson.showChatBubble === 'function') {
+          anyPerson.showChatBubble(text);
+        }
+      }
+    });
   }
 
   upsert(data, snapshot = false) {
@@ -1441,12 +1449,29 @@ class WorshipperManager {
       else if (data.instant || data.state === 'praying') person.placeAndPray();
       else if (data.state === 'exiting') person.leave();
       else person.enter();
+
+      // Kiểm tra xem có bong bóng chat đang chờ hiển thị không
+      if (this.pendingBubbles.has(data.id)) {
+        const pending = this.pendingBubbles.get(data.id);
+        this.pendingBubbles.delete(data.id);
+        if (Date.now() - pending.time < 12000) {
+          person.showChatBubble(pending.text);
+        }
+      }
       return person;
     }
     person.updateData(data);
     if (data.state === 'exiting') person.leave();
     else if (data.state === 'praying') person.pray();
     else if (data.state === 'entering' && person.mode !== 'entering') person.enter();
+
+    if (this.pendingBubbles.has(data.id)) {
+      const pending = this.pendingBubbles.get(data.id);
+      this.pendingBubbles.delete(data.id);
+      if (Date.now() - pending.time < 12000) {
+        person.showChatBubble(pending.text);
+      }
+    }
     return person;
   }
 
@@ -1609,6 +1634,13 @@ class TempleScene extends Phaser.Scene {
 
   upsertPresence(presence) { this.worshippers.upsert(presence); }
   removePresence(id) { this.worshippers.remove(id); }
+  showChatBubble(payload) {
+    if (!payload?.text) return;
+    const targetId = payload.presenceId || payload.viewer?.id;
+    if (targetId && this.worshippers) {
+      this.worshippers.showChatBubble(targetId, payload.text);
+    }
+  }
 
   presentGift(payload) {
     if (this.presenting) return;
@@ -2011,15 +2043,7 @@ liveSocket.on('temple:incense', (payload) => {
   sceneOrQueue((scene) => scene.queueIncense(payload));
 });
 liveSocket.on('chat:message', (payload) => {
-  ui.appendChatMessage(payload);
-  sceneOrQueue((scene) => {
-    const person = payload.presenceId
-      ? scene.worshippers?.people?.get(payload.presenceId)
-      : (payload.viewer?.id ? scene.worshippers?.people?.get(payload.viewer.id) : null);
-    if (person && typeof person.showChatBubble === 'function') {
-      person.showChatBubble(payload.text);
-    }
-  });
+  sceneOrQueue((scene) => scene.showChatBubble(payload));
 });
 liveSocket.on('connect_error', () => ui.updateLive({ status: 'disconnected' }));
 
@@ -2043,13 +2067,6 @@ $('#toggle-gift-guide')?.addEventListener('click', () => {
   try { localStorage.setItem('giftGuideCollapsed', guide.classList.contains('panel-collapsed') ? '1' : '0'); } catch (_) {}
 });
 
-$('#toggle-chat-box')?.addEventListener('click', () => {
-  const box = $('#live-chat-box');
-  if (!box) return;
-  box.classList.toggle('panel-collapsed');
-  try { localStorage.setItem('chatBoxCollapsed', box.classList.contains('panel-collapsed') ? '1' : '0'); } catch (_) {}
-});
-
 $('#fortune-close-btn')?.addEventListener('click', () => ui.hideFortune());
 
 // Khôi phục trạng thái thu gọn đã lưu từ phiên trước
@@ -2059,8 +2076,5 @@ try {
   }
   if (localStorage.getItem('donorBoardCollapsed') === '1') {
     $('#donor-board')?.classList.add('panel-collapsed');
-  }
-  if (localStorage.getItem('chatBoxCollapsed') === '1') {
-    $('#live-chat-box')?.classList.add('panel-collapsed');
   }
 } catch (_) {}
