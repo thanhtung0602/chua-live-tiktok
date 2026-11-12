@@ -659,6 +659,8 @@ $$('[data-quick]').forEach((btn) => btn.addEventListener('click', async () => {
         body: JSON.stringify({ type: 'like', viewerId: id, username: `pt_${id}`, nickname: name, count: 1 })
       });
       toast(`Đã thêm Phật tử: ${name}`);
+      return;
+    }
     if (action.startsWith('gift-')) {
       const giftMap = {
         'gift-rose': { id: 'rose', name: 'Hoa hồng', desc: 'Cầu duyên' },
